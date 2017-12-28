@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Project Euler Application Readme - NET</title>
+
+		<style>
+		#main
+		{
+		    width: 50%;
+    		margin: 0 auto;
+    		position:relative;
+    		top:25px;
+		}
+		#nav_footer
+		{
+			position:relative;
+    		bottom:25px;
+		}
+
+		.content
+		{
+			display: none;
+		}
+
+		#overview:target { display: block; }
+		#application:target { display: block; }
+		#solved_problems:target { display: block; }
+		#problems_in_development:target { display: block; }
+		</style>
+
+
+	</head>
+
+	<body onload="document.getElementById('overview_link').click()">
+
+		<div id="main">
+			<div id="nav">
+				<a id="overview_link" href="#overview">Overview</a>
+				<a id="application_link" href="#application">Application</a>
+				<a href="#solved_problems">Solved Problems</a>
+				<a href="#problems_in_development">Problems under development</a>
+			</div>
+
+			<div id="overview" class="content">
+				<div id="title_overview"><h3>Overview</h3></div>
+				<div id="body_overview">
+
+					<p>This program was, initially, made to test how hard it would be to convert my original Project Euler program into a networked solution.
+					The conversion was not a complicated one. I striped all of the UI code from the problems implementation and created a new UI in Unity3D (nothing fancy and almost an exact copy of the original).
+					The network connection was, at first, made using TCP sockets and later I added an UDP option. In the Unity UI (client) I used the native TCPCLient and UDPClient classes, to read/write on the stream(TCP)
+					and to Send/Receive(UDP).
+					On the problems program (server) was used SDL2_net that provides a simple encapsulation of berkeley sockets (winsock on windows).
+					</p>
+					<p>The protocol used for communication was a very simple one message_type|message|close_tag|, the close tag is always "END" and the final pipe is used to separate
+					the message from any buffer garbage.</p>
+
+					<p>The program does not have any type of automatic "NAT safeguard", that is, if the server is behind a NAT you have to manually open the port (default 45456),
+						as no automatic solution was implemented.
+					</p>
+					<p>I am searching for a good, and easy to use lib to help me do that, and because of past experiences, the search will take some time. During the
+					development of the game Shrooms, we(the team, but mostly me) tested several options, libs and user devices(cable/internet companies routers), and the results were weak.</p>
+					<p>First uPnp is a mess, half of the time, it does not work and when it works in a device, the device from another manufacturer fails to do so. </p>
+
+					<p>And second, NAT punch-through failed some times(like with uPnp, different routers might have different NAT type and not all support NAT punch-through and you
+						may have to have to manually configure the router), but this is the best one (Shrooms uses this approach).</p>
+
+					<p>There are other solutions besides the last two, like a public routing server(public IP) that routes all messages among the connected peers, but it is the
+					least efficient approach so it should be used as a last resort.</p>
+
+					<p>Because of that, I provide an IP:PORT (set as default on the client 51.255.196.122:45456) to a VPS running euler_server, listening to TCP and UDP.</p>
+					<p>The 'config.json' file next to the server binary allows you to change the port(TCP and UDP use the same) and set what type (TCP/UDP) of server your want to start(both 'on' by default). 
+					<p>Any problems running the program, let me know.</p>
+
+					<h3>How to compile the program</h3>
+					<p>The development of the application is being done on a Linux system (fully updated Archlinux) using g++ as the compiler and GDB as the debugger. Other than the standard
+					c++ libs, it used SDL2, SDL2_net, boost::multiprecision lib and GMP(linux only). </p>
+					<p>The boost::multiprecision lib is used because it let us change its backend lib. On linux I used GMP and on windows I used the "native" boost implementation (cpp_int) and
+					the selection is made with preprocessor directives in the header file "defines.hpp". This approach was used as I was unable to correctly compile GMP and MPIR on windows.</p>
+
+					<h4>Linux</h4>
+					<p>On linux you can use the provided Makefile to compile the program and you need to have installed gcc, make, SDL2, SDL2_image, SDL2_ttf, boost and GMP. For easier
+					installation use your distro package manager to download and install the libs. The compiled program will be inside the "bin" folder.</p>
+
+					<h4>Windows</h4>
+					<p>The provided windows build was compiled using VS Express 2015. For you to compile it yourself, first you need to download the needed libs:</p>
+					<ul>
+						<li><a href="https://www.libsdl.org/download-2.0.php" target="_blank">SDL2 (dev libs)</a></li>
+						<li><a href="https://www.libsdl.org/projects/SDL_net/" target="_blank">SDL2_net (dev libs)</a></li>
+						<li><a href="http://www.boost.org/" target="_blank">boost</a></li>
+					</ul>
+					<p>After you download the libs create a new vs c++ project (I created an empty one and used "mainCRTStartup" as the linker entry point) and add the program source files (you need to add the lib/jsoncpp folder to your include search path). Add the
+					include dirs for all the downloaded libs to your project include search path as well as add the 3 SDL libs "lib" subfolders (I used the x64 for all 3) to your lib search path.
+				   	Finally your need to add SDL2.lib, SDL2main.lib and SDL2_net.lib to your linker input. The boost::multiprecision lib does not need any config from the linker as it is
+			        a header only lib.</p>
+				    <p>Now, you should be able to compile the program on windows (if you did not add the .dlls to your system or their path to environment path var, you need to put the .dlls next to the exe,
+					you can find the .dlls in the lib folders for all SDL libs). In case you are unable to correctly configure the SDL libs check this
+					<a href="http://lazyfoo.net/tutorials/SDL/01_hello_SDL/windows/msvsnet2010u/index.php" target="_blank">tutorial</a>.</p>
+
+					<h4>Folder and Files (Server)</h4>
+					<ul>
+						<li>'src/' - contains the entire source code</li>
+						<li>'src/lib/' - contains external downloaded libs which source code will be compiled into the program (jsoncpp in this case)</li>
+						<li>'src/include/' - all the header files</li>
+						<li>'src/src/' - all the .cpp files. main.cpp is in 'src' and not this subfolder</li>
+						<li>'docs/' - documentation generated by doxygen</li>
+						<li>'bin/' - destination (with the correct data folder structure) for the build compiled by using the Makefile</li>
+						<li>'objects/' - folder that store the object files generated during compilation</li>
+
+						<li>'euler_short' - small bash script to run the program after compilation</li>
+						<li>'Makefile' - default file used by make to compile the program (in the future I need to improve/simplify this file)</li>
+						<li>'readme_net.html' - this file</li>
+					</ul>
+
+					<h4>Folder and Files (Client)</h4>
+					<p>Just open the project on Unity3D(5.3.5f1 used), otherwise, all my script are inside 'Assets/Scripts/'</p>
+
+					<h3>Known bugs</h3>
+						<p>On windows, problem 36 is crashing the program, I was able to identify where the problem is, but I have yet to start to correct it, therefore it was disabled in the provided
+						windows build.<br />
+						In the Unity client, some times a problem solution (that was requested to the server) is no shown, although debugs show that it was received. Just request the problem again an the solution is shown (no new net request is made).
+						There might be a concurrency problem with the client thread and the main thread even though I am using a mutex to control access to the output text (could be some "automatic"
+						unity call that I cannot control via mutex). Also, the simple UDP timeout timer is not working correctly.<br />
+						A basic attempt for an UDP timeout when requesting a solution is not working (I have yet to further test it).
+						</p>
+
+					<h3>What next?</h3>
+					<p>
+						I do not know. I will keep working on the base program and merge the changes to this one. Or I might implement NAT punchthrough solution, or create a new UI
+						in godot/python that reads/writes using a different protocol and needs to use a broker to be able to communicate with the server. And the broker could be a stand alone program
+						or an add-on for the current server. Also implement so kind of UDP reliability system. Damn, so many ideas are flowing.
+					</p>
+
+					<br /><br />
+
+
+				</div>
+			</div>
+
+			<div id="application" class="content">
+				<div id="title_application"><h3>The application</h3></div>
+				<div id="body_application">
+					<p>As I say before, for this application I chose to use C++ (c++11/14) and use the maximum of its native and stl(like threads, clock and unique_ptr)
+						functionality before relying on external libs. For that reason
+						I am only using SDL2_net, GMP(not on windows), jsoncpp and boost::multiprecision as external libs (all cross-platform, except for the problems with GMP).
+						The 'src' folder contains the source code, 'docs' folder contains the output of doxygen for this problem and the 'bin' folder has a linux build in there.
+						The euler_short script is just a shortcut to run the program if you are using a terminal to build it (on linux).
+						</p>
+					<p>The comments used to generate the doxygen files, are present in the header files only, cpp files comments are only notes regarding the implementation.</p>
+					<p>Now I'll give a brief description about some of the files that contain server side code (TCP/UDP).<br />
+						poker_hand.cpp/.h, utils.cpp/.h, graphs.h, eulerproblems.h
+						and every file inside the problems folder contain the implementation of the problems and their support functions. Keep in mind that things are being
+						implemented as I need them, so some classes may look very incomplete.</p>
+					<p>All the files related to the previous UI were removed and TCP/UDP server files were added.</p>
+
+					<h4>server_socket_TCP.cpp/hpp</h4>
+					<p>This class manages the creation of the TCP server, as well as the management of all client connections, including read/write operations.
+					This server runs in a single thread but when a new problem needs to be solved, a new thread is created for it.</p>
+
+					<h4>server_socket_UDP.cpp/hpp</h4>
+					<p>The same as the previous class, but in this case the server uses UDP instead of TCP.</p>
+
+					<h4>problem_results.cpp (class is defined in eulerproblems.h)</h4>
+					<p>New class created to take care of problem management. It stores previous results to avoid resolving a problem and creates new solving threads when needed.
+					When a problem is solved, it sends the result to the client, checking if it needs to use TCP or UDP, as the server can have both servers running at the same time.</p>
+
+					<br /><br />
+				</div>
+			</div>
+
+			<div id="solved_problems" class="content">
+				<div id="title_problems"><h3>The problems</h3></div>
+
+				<div id="problems_links">
+					<p>Currently only the problems available are 1-25,27,29,30,34-36,42,48,67,81</p>
+					<p>Bellow a brief notes on the problems, based on my experience solving then</p>
+				</div>
+
+
+				<div id="body_problems">
+					<div id="p001">
+						<h4>Problem 001 - <a href="https://projecteuler.net/problem=1" target="blank">Euler Link</a></h4>
+						<p>Nothing special about this problem</p>
+					</div>
+					<div id="p002">
+						<h4>Problem 002 - <a href="https://projecteuler.net/problem=2" target="blank">Euler Link</a></h4>
+						<p>Simple Fibonacci implementation with the specific conditions of the problem</p>
+					</div>
+					<div id="p003">
+						<h4>Problem 003 - <a href="https://projecteuler.net/problem=3" target="blank">Euler Link</a></h4>
+						<p>This problem does not have anything special itself, but it was for this problem that I first implemented the Sieve of Eratosthenes </p>
+					</div>
+					<div id="p004">
+						<h4>Problem 004 - <a href="https://projecteuler.net/problem=4" target="blank">Euler Link</a></h4>
+						<p>For this problem I implemented a function to check if a number is palindromic, initially I used strings the changed the implementation to math operations</p>
+					</div>
+					<div id="p005">
+						<h4>Problem 005 - <a href="https://projecteuler.net/problem=5" target="blank">Euler Link</a></h4>
+						<p>The Least Common Multiple function used by this problem is a little "heavy" (the prime factor calculation is not the fastest function,
+							although the use of a pre-created prime vector helps) and I may need to find a better solution</p>
+					</div>
+					<div id="p006">
+						<h4>Problem 006 - <a href="https://projecteuler.net/problem=6" target="blank">Euler Link</a></h4>
+						<p>Nothing special about this problem</p>
+					</div>
+					<div id="p007">
+						<h4>Problem 007 - <a href="https://projecteuler.net/problem=7" target="blank">Euler Link</a></h4>
+						<p>As I solved this problem after solving problem 003 it was only a matter of calling the sieve</p>
+					</div>
+
+					<div id="p008">
+						<h4>Problem 008 - <a href="https://projecteuler.net/problem=8" target="blank">Euler Link</a></h4>
+						<p>Nothing special about this problem</p>
+					</div>
+					<div id="p009">
+						<h4>Problem 009 - <a href="https://projecteuler.net/problem=9" target="blank">Euler Link</a></h4>
+						<p>In this problem was one in which I remembered how awesome math is and how simple formulas can solve "complex" problems.
+							So for this problem, and after some research, I found the great Euclid's formula that allowed me to solve this problem with ease</p>
+					</div>
+					<div id="p010">
+						<h4>Problem 010 - <a href="https://projecteuler.net/problem=10" target="blank">Euler Link</a></h4>
+						<p>Once again Sieve Of Eratosthenes to the rescue</p>
+					</div>
+					<hr />
+					<div id="p011">
+						<h4>Problem 011 - <a href="https://projecteuler.net/problem=11" target="blank">Euler Link</a></h4>
+						<p>This problem is not hard, although it took me a while to solve because my approach was overcomplicated.
+							After a small discussion with a former coworker I arrived at the current solution, which is very basic.
+							Once again a second look a problem can help a lot.</p>
+					</div>
+					<div id="p012">
+						<h4>Problem 012 - <a href="https://projecteuler.net/problem=12" target="blank">Euler Link</a></h4>
+						<p>By applying the Triangle number formula and the prime factor function, the solution was easy to reach</p>
+					</div>
+					<div id="p013">
+						<h4>Problem 013 - <a href="https://projecteuler.net/problem=13" target="blank">Euler Link</a></h4>
+						<p>So this was the first problem that needed file reading and the use of a big number external lib (GMP)</p>
+					</div>
+					<div id="p014">
+						<h4>Problem 014 - <a href="https://projecteuler.net/problem=14" target="blank">Euler Link</a></h4>
+						<p>Nothing special about this problem</p>
+					</div>
+					<div id="p015">
+						<h4>Problem 015 - <a href="https://projecteuler.net/problem=15" target="blank">Euler Link</a></h4>
+						<p>Ah, problem 15, good old problem 15, the problem that took me the longest to solve.
+							Once again, not because it is hard, but because I was fixed in a solution and did not see anything else.</p>
+						<p>So, when I read the description I though graphs, graphs and graphs. I implemented two modified graph traversals algorithms
+							(the code is there but not in use), the first one based on Depth-first search (very very slow)
+							and the second based on Breadth-first search (very slow and "eats" lots of memory). Then, after a lucky search result I noticed that the problem
+							could be easily solved by a simple permutation calculation (the one in use)</p>
+					</div>
+					<div id="p016">
+						<h4>Problem 016 - <a href="https://projecteuler.net/problem=16" target="blank">Euler Link</a></h4>
+						<p>Nothing special about this problem other than the fact that I needed to use a power function from GMP</p>
+					</div>
+					<div id="p017">
+						<h4>Problem 017 - <a href="https://projecteuler.net/problem=17" target="blank">Euler Link</a></h4>
+						<p>Funny problem, not hard, but I do not like the result algorithm that much (in the future I might take a new look at it)</p>
+					</div>
+
+					<div id="p018">
+						<h4>Problem 018 - <a href="https://projecteuler.net/problem=18" target="blank">Euler Link</a></h4>
+						<p>When I read the description I though graphs, graphs and graphs (seems familiar?), but this time it turned out to be an excellent solution.
+							So I implemented a modified version of the Dijkstra's  search algorithm and it worked like a charm.
+							Problem 067 is the same as 018 but with a bigger graph. I really enjoyed solving this one.</p>
+					</div>
+					<div id="p019">
+						<h4>Problem 019 - <a href="https://projecteuler.net/problem=19" target="blank">Euler Link</a></h4>
+						<p>When reading the description of this problem I remembered that there are algorithms to find days of the week,
+							so I searched and and implemented one of then, in this case a Gauss's algorithm.</p>
+					</div>
+					<div id="p020">
+						<h4>Problem 020 - <a href="https://projecteuler.net/problem=20" target="blank">Euler Link</a></h4>
+						<p>This is the first problem using multithreading.
+							Given the complexity of the problem, the use of threads is not really necessary,
+							although at the time I was testing C++11 threading and it gave me faster results so I kept it.</p>
+					</div>
+					<hr />
+					<div id="p021">
+						<h4>Problem 021 - <a href="https://projecteuler.net/problem=21" target="blank">Euler Link</a></h4>
+						<p>Nothing special about this problem</p>
+					</div>
+					<div id="p022">
+						<h4>Problem 022 - <a href="https://projecteuler.net/problem=22" target="blank">Euler Link</a></h4>
+						<p>For this problem I had to create some functions to manipulate strings, like Trim and Explode.</p>
+					</div>
+					<div id="p023">
+						<h4>Problem 023 - <a href="https://projecteuler.net/problem=23" target="blank">Euler Link</a></h4>
+						<p>Nothing special about this problem</p>
+					</div>
+					<div id="p024">
+						<h4>Problem 024 - <a href="https://projecteuler.net/problem=24" target="blank">Euler Link</a></h4>
+						<p>I implemented my own Lexicographic permutations algorithm, before I found that there is one in stl.</p>
+					</div>
+					<div id="p025">
+						<h4>Problem 025 - <a href="https://projecteuler.net/problem=25" target="blank">Euler Link</a></h4>
+						<p>Nothing special about this problem</p>
+					</div>
+					<div id="p027">
+						<h4>Problem 027 - <a href="https://projecteuler.net/problem=27" target="blank">Euler Link</a></h4>
+						<p>The implementation is very straightforward, although the b needs to be prime optimization may not be that obvious</p>
+					</div>
+					<div id="p029">
+						<h4>Problem 029 - <a href="https://projecteuler.net/problem=29" target="blank">Euler Link</a></h4>
+						<p>Nothing special about this problem</p>
+					</div>
+					<div id="p030">
+						<h4>Problem 030 - <a href="https://projecteuler.net/problem=30" target="blank">Euler Link</a></h4>
+						<p>Nothing special about this problem</p>
+					</div>
+
+					<hr />
+					<div id="p034">
+						<h4>Problem 034 - <a href="https://projecteuler.net/problem=34" target="blank">Euler Link</a></h4>
+						<p>Nothing special about this problem</p>
+					</div>
+					<div id="p035">
+						<h4>Problem 035 - <a href="https://projecteuler.net/problem=35" target="blank">Euler Link</a></h4>
+						<p>Nothing special about this problem</p>
+					</div>
+					<div id="p036">
+						<h4>Problem 036 - <a href="https://projecteuler.net/problem=36" target="blank">Euler Link</a></h4>
+						<p>Nothing special about this problem other than the note that for a binary number to be palindrome, the base 10 number HAS to be odd so the binary ends in 1</p>
+					</div>
+
+					<hr />
+					<div id="p042">
+						<h4>Problem 042 - <a href="https://projecteuler.net/problem=42" target="blank">Euler Link</a></h4>
+						<p>Solution based on problem 022</p>
+					</div>
+					<div id="p048">
+						<h4>Problem 048 - <a href="https://projecteuler.net/problem=48" target="blank">Euler Link</a></h4>
+						<p>Nothing special about this problem</p>
+					</div>
+
+					<hr />
+					<div id="p067">
+						<h4>Problem 067 - <a href="https://projecteuler.net/problem=67" target="blank">Euler Link</a></h4>
+						<p>Same as problem 018</p>
+					</div>
+
+					<hr />
+					<div id="p081">
+						<h4>Problem 081 - <a href="https://projecteuler.net/problem=81" target="blank">Euler Link</a></h4>
+						<p>I looked at the problem and the first thing that came to mind was "problems 067" and the solution that I implemented is a small modification of
+							problems 018 and 067.</p>
+					</div>
+					<hr />
+					<br /><br />
+				</div>
+
+
+			</div>
+
+			<div id="problems_in_development" class="content">
+				<div id="title_problems_in_development"><h3>The application</h3></div>
+				<div id="body_problems_in_development">
+					<p>Currently the following problems are being worked on 26,47,61,72,82 and 94</p>
+					<p>I will only speak about 72 and 94 as they are in a "special" stage, the others are either incomplete or have some error that I have yet to find.</p>
+					<p>Both 72 and 94 are solved, at least mathematically, and both suffer from the same problem floating point precision.<br />
+						For 72 the solution passed by a sum of <a href="https://en.wikipedia.org/wiki/Euler%27s_totient_function" target="blank">phi (Euler's totient function)</a> for 1 &lt; n &lt; 1000000001
+						and using <a href="http://www.wolframalpha.com/input/?i=sum(phi(n))+1%3Cn%3C10001" target="blank">wolframalpha.com</a>.
+						When the upper limit &le; 100000000 (100 millions) equals the one from wolphram, when the limit is the on of the problem (1 thousand of millions) the value misses
+						My analysis takes me to believe that when the prime number used by 'phi' is to big it causes precision error.<br />
+						For 94 the problem found is that some values are losing the decimal part, that is, some result, if calculated by hand give a result with decimal, but the algorithm cuts it and return
+						only the integral part, breaking the algorithm validation code.
+					</p>
+					<br /><br />
+				</div>
+			</div>
+			<div id="nav_footer">
+				<a id="overview_link2" href="#overview">Overview</a>
+				<a href="#application">The Application</a>
+				<a href="#solved_problems">Solved Problems</a>
+				<a href="#problems_in_development">Problems under development</a>
+			</div>
+		</div>
+
+
+
+
+	</body>
+
+</html>

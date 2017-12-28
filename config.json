@@ -1,0 +1,10 @@
+{
+	"tcp_default_port"   : 45456,
+	"udp_default_port"   : 45456,
+	"message_buffer_size"  : 64,
+	"max_clients" : 10,
+	"start_tcp_server":false,
+	"start_udp_server":true
+}
+
+
