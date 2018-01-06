@@ -10,18 +10,45 @@ public class ProblemInput : MonoBehaviour
 
 	public InputField m_input_field;
 	public Text m_result_text;
+	public Text m_problems_list;
 
 	private Dictionary<string, string> m_results;
+	private List<KeyValuePair<string, string>> m_render_results;
 	public bool m_can_update;
 
 	//change this to a message sent by the server with its available problems
-	private string[] m_available_problems = { "1", "2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19",
-		"20","21","22","23","24","25","27","29","30","34", "35","42","48","67","81" };
+	public List<string> m_available_problems;
 
 	public void Start()
 	{
+		m_available_problems = new List<string>();
+
 		m_results = new Dictionary<string, string> ();
+		m_render_results = new List<KeyValuePair<string, string>> ();
 		m_can_update = false;
+
+		StartCoroutine (WriteToResult ());
+	}
+
+	IEnumerator WriteToResult()
+	{
+		var wait = new WaitForSeconds (0.005f);
+
+		while(true)
+		{
+			string text="";
+
+			foreach(var entry in m_render_results)
+			{
+				string result = entry.Key;
+				while (result.Length < 3)
+					result = "0" + result;
+				text +="P"+result+": "+entry.Value+"\n";
+			}
+
+			m_result_text.text = text;
+			yield return wait;
+		}
 	}
 
 	//Update, reads input and updates the problems input box
@@ -61,10 +88,11 @@ public class ProblemInput : MonoBehaviour
 	//save the result of a problem to avoid calling the server again
 	public void StoreResult(string problem_number, string result)
 	{
+		m_render_results.Add (new KeyValuePair<string, string>(problem_number, result));
 		if (!m_results.ContainsKey (problem_number)) 
 		{
 			m_results.Add (problem_number, result);
-		} 
+		}
 	}
 
 	public void ButtonDown(int number)
@@ -107,10 +135,11 @@ public class ProblemInput : MonoBehaviour
 		{
 			string result = m_results [problem_number];
 
-			while (problem_number.Length < 3)
-				problem_number = "0" + problem_number;
+			//while (problem_number.Length < 3)
+				//problem_number = "0" + problem_number;
 
-			m_result_text.text +="P"+problem_number+": "+result+"\n";
+			m_render_results.Add (new KeyValuePair<string, string>(problem_number, result));
+			//m_result_text.text +="P"+problem_number+": "+result+"\n";
 		} 
 		else //uses the loaded client
 		{
@@ -128,7 +157,9 @@ public class ProblemInput : MonoBehaviour
 	{
 		bool exists = false;
 
-		for (int i = 0; i < m_available_problems.Length; i++) 
+		/*if (m_available_problems.Find (number => number.CompareTo (problem_number) == 0))
+			return true;*/
+		for (int i = 0; i < m_available_problems.Count; i++) 
 		{
 			if (m_available_problems [i] == problem_number) 
 			{
@@ -138,5 +169,23 @@ public class ProblemInput : MonoBehaviour
 		}
 
 		return exists;
+	}
+
+	public void SetList(string[] list)
+	{
+		string list_string = "Available problems: ";
+		m_available_problems.Clear ();
+
+		//ignore first and last
+		for (int i = 1; i < list.Length -1; ++i)
+		{
+			m_available_problems.Add (list [i]);
+			list_string += list [i];
+
+			if(i < list.Length - 2)//ignore last problem
+				list_string += ", ";
+		}
+
+		m_problems_list.text = list_string;
 	}
 }

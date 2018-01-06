@@ -1,0 +1,17 @@
+build/**
+bk/**
+bin/**
+bin (copy 1)/**
+client/ProjectEuler/obj/**
+client/ProjectEuler/Build/**
+client/ProjectEuler/Library/**
+client/ProjectEuler/*.userprefs
+client/ProjectEuler/*.sln
+client/ProjectEuler/*.csproj
+client/ProjectEuler/.vs/**
+client/ProjectEuler/Assets/*.meta
+client/ProjectEuler/Assets/Scripts/*.meta
+client/ProjectEuler/Assets/Scenes/*.meta
+client/ProjectEuler/Assets/Images/*.meta
+client/ProjectEuler/Assets/Animations/*.meta
+objects/**

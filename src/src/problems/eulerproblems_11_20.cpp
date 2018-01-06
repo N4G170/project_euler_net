@@ -1,4 +1,4 @@
-#include "eulerproblems.h"
+#include "eulerproblems.hpp"
 #include <vector>
 #include <list>
 #include <array>
@@ -13,20 +13,17 @@
 #include <utility>
 
 
-#include <SDL2/SDL_ttf.h>
 #include <thread>
 #include <future>
 #include <chrono>
 using namespace std::chrono_literals;
 
-#include "graphs.h"
-#include "message_writer.h"
-#include "clock.h"
+#include "graphs_and_grids.hpp"
+#include "message_writer.hpp"
+#include "clock.hpp"
 
-void Problem011()
+std::string Problem011()
 {
-    //auto clock_id = Clock::Instance()->StartClock();
-
     int grid[20][20] =  {{ 8,  2, 22, 97, 38, 15,  0, 40,  0, 75,  4,  5,  7, 78, 52, 12, 50, 77, 91,  8},
                          {49, 49, 99, 40, 17, 81, 18, 57, 60, 87, 17, 40, 98, 43, 69, 48,  4, 56, 62,  0},
                          {81, 49, 31, 73, 55, 79, 14, 29, 93, 71, 40, 67, 53, 88, 30,  3, 49, 13, 36, 65},
@@ -49,14 +46,14 @@ void Problem011()
                          { 1, 70, 54, 71, 83, 51, 54, 69, 16, 92, 33, 48, 61, 43, 52,  1, 89, 19, 67, 48}};
 
     short grid_size = 20;
-    long max_product = 1;
-    std::string str = "";
+    long_t max_product = 1;
+    // std::string str = "";
 
     for(int i = 0; i < grid_size; i++)//row
     {
         for(int j=0; j < grid_size; j++)//column
         {
-            long product = 1;
+            long_t product = 1;
             for(int k = j; k < j + 4 && k < grid_size; k++)//horizontal, right
             {
                 product *= grid[i][k];
@@ -99,21 +96,17 @@ void Problem011()
         }
     }
 
-    ProblemsResults::Instance()->SetStoredResult("11", std::to_string(max_product));
-    //MessageWriter::Instance()->WriteToOutputBox("P011: "+std::to_string(max_product)+ " in "+Clock::Instance()->StopAndReturnClock(clock_id) + " ms");
-    //return ("P011: "+std::to_string(max_product)+ " in "+Clock::Instance()->StopAndReturnClock(clock_id) + " ms");
+    return (std::to_string(max_product));
 }
 
-void Problem012()
+std::string Problem012()
 {
-    //auto clock_id = Clock::Instance()->StartClock();
-
-    unsigned long current_number = 1;
-    unsigned long i = 1;
+    ulong_t current_number = 1;
+    ulong_t i = 1;
     int total_divisors = 1;
 
-    std::vector<unsigned long> primes = PrimeNumberPoolOfSize(70000);//number based on testing
-    std::map<unsigned long, unsigned long> prime_factors;
+    std::vector<ulong_t> primes = PrimeNumberPoolOfSize(70000);//number based on testing
+    std::map<ulong_t, ulong_t> prime_factors;
 
     while(total_divisors < 500)
     {
@@ -133,15 +126,11 @@ void Problem012()
         }
     }
 
-    ProblemsResults::Instance()->SetStoredResult("12", std::to_string(current_number));
-    //MessageWriter::Instance()->WriteToOutputBox("P012: "+std::to_string(current_number)+ " in "+Clock::Instance()->StopAndReturnClock(clock_id) + " ms");
-    //return ("P012: "+std::to_string(current_number)+ " in "+Clock::Instance()->StopAndReturnClock(clock_id) + " ms");
+    return (std::to_string(current_number));
 }
 
-void Problem013()
+std::string Problem013()
 {
-    //auto clock_id = Clock::Instance()->StartClock();
-
     //mpz_class belongs to the big number lib gmpxx
     std::list<BigInt_t> all_numbers;
     BigInt_t result;
@@ -160,23 +149,19 @@ void Problem013()
             result+=single_number;
         }
 
-        ProblemsResults::Instance()->SetStoredResult("13", result.str().substr(0,10));
-       //MessageWriter::Instance()->WriteToOutputBox("P013: "+result.get_str().substr(0,10)+ " in "+Clock::Instance()->StopAndReturnClock(clock_id) + " ms");
-       //return ("P013: "+result.get_str().substr(0,10)+ " in "+Clock::Instance()->StopAndReturnClock(clock_id) + " ms");
+       return (result.get_str().substr(0,10));
 
     }
     else
     {
         MessageWriter::Instance()->WriteLineToConsole("ERROR: failed to open input file at \"data/problems/p013\"");
         //MessageWriter::Instance()->WriteToOutputBox("ERROR: failed to open input file at \"data/problems/p013\"");
-        //return ("ERROR: failed to open input file at \"data/problems/p013\"");
+        return ("ERROR: failed to open input file at \"data/problems/p013\"");
     }
 }
 
-void Problem014()
+std::string Problem014()
 {
-    //auto clock_id = Clock::Instance()->StartClock();
-
     //Collatz sequence
     //n → n/2 (n is even)
     //n → 3n + 1 (n is odd)
@@ -185,7 +170,7 @@ void Problem014()
 
     for(int i = 2; i <= 1000000; i++)//all number until 1'000'000
     {
-        unsigned long current_number = i;
+        ulong_t current_number = i;
         int chain_length = 2;//includes the number itself and number 1
 
         while(current_number > 1)
@@ -206,41 +191,142 @@ void Problem014()
 
     }
 
-    ProblemsResults::Instance()->SetStoredResult("14", std::to_string(result));
-    //MessageWriter::Instance()->WriteToOutputBox("P014: "+std::to_string(result)+ " in "+Clock::Instance()->StopAndReturnClock(clock_id) + " ms");
-    //return ("P014: "+std::to_string(result)+ " in "+Clock::Instance()->StopAndReturnClock(clock_id) + " ms");
+    return (std::to_string(result));
 }
 
-void Problem015()
+std::string Problem015()
 {
-    //auto clock_id = Clock::Instance()->StartClock();
+    //the problem works with a 20x20 grid of squares, I'll use a 21x21 grid of vertices
+    //this 21x21 "matrix" will store all the nodes
+    const int grid_size=21;
+    // unsigned int destination_id = std::stoul(std::to_string(grid_size) + std::to_string(grid_size));//id will be grid_size+grid_size ex grid_size=5 destination = 55
+
+    // short implementation = 3;//1-Depth_First; 2-Breadth_First; 3-Pascal_Triangle
+
+    std::array<std::array<SquareGridGraphNode, grid_size>, grid_size> nodes;
+
+    for(int i=0; i<grid_size; i++)
+    {
+        for(int j=0; j<grid_size; j++)
+        {
+            //set ids as connections
+            nodes[i][j].m_node_id = std::stoul(std::to_string(i+1) + std::to_string(j+1));//id will be i+j like i+1=1 and j+1=1 id = 11
+
+            //up and left are unavailable
+            nodes[i][j].m_up_node = nullptr;
+            nodes[i][j].m_left_node = nullptr;
+
+            //down
+            if(i < grid_size-1)
+                nodes[i][j].m_down_node = &nodes[i+1][j];
+            else
+                nodes[i][j].m_down_node = nullptr;
+
+            //right
+            if(j < grid_size-1)
+                nodes[i][j].m_right_node = &nodes[i][j+1];
+            else
+                nodes[i][j].m_right_node = nullptr;
+        }
+    }
+
+    // <f> Depth First - works, but slow as hell
+    // if(implementation == 1)
+    // {
+    //     //calculate number of Lattice paths, while only being able to move to the right and down
+    //     std::stack<SquareGridGraphNode*> nodes_to_check_df;
+    //
+    //     nodes_to_check_df.push(&nodes[0][0]);
+    //
+    //     ulong_t total_paths = 0;
+    //
+    //
+    //     while(!nodes_to_check_df.empty())
+    //     {
+    //         SquareGridGraphNode* current_node = nodes_to_check_df.top();
+    //         nodes_to_check_df.pop();
+    //
+    //         //MessageWriter::Instance()->WriteLineToConsole(std::to_string(current_node->m_node_id));
+    //
+    //         if(current_node->m_down_node != nullptr)
+    //         {
+    //             nodes_to_check_df.push(current_node->m_down_node);
+    //         }
+    //
+    //         if(current_node->m_right_node != nullptr)
+    //         {
+    //             nodes_to_check_df.push(current_node->m_right_node);
+    //         }
+    //
+    //         if(current_node->m_node_id == destination_id)
+    //         {
+    //             total_paths++;
+    //         }
+    //     }
+    // }
+    // </f>
+
+    // <f> Breadth First - Slow, but faster than Depth First and uses lots of memory
+    // if(implementation == 2)
+    // {
+    //     unsigned int total = 0;
+    //     std::queue<SquareGridGraphNode*> nodes_to_check_bf;
+    //
+    //     nodes_to_check_bf.push(&nodes[0][0]);
+    //
+    //     while(!nodes_to_check_bf.empty())
+    //     {
+    //         SquareGridGraphNode* current_node = nodes_to_check_bf.front();
+    //         nodes_to_check_bf.pop();
+    //
+    //         if(current_node->m_down_node != nullptr)
+    //         {
+    //             if(current_node->m_down_node->m_node_id == destination_id)//does not enqueue if destination was found
+    //             {
+    //                 total++;
+    //             }
+    //             else
+    //                 nodes_to_check_bf.push(current_node->m_down_node);
+    //
+    //         }
+    //
+    //         if(current_node->m_right_node != nullptr)
+    //         {
+    //             if(current_node->m_right_node->m_node_id == destination_id)//does not enqueue if destination was found
+    //             {
+    //                 total++;
+    //             }
+    //             else
+    //                 nodes_to_check_bf.push(current_node->m_right_node);
+    //
+    //         }
+    //     }
+    // }
+    // </f>
 
     //{ Pascal Triangle - After some search, it seems that this specific lattice path search (only down and right),
     //is replicating the Pascal Triangle and the solution to this problem can be found with C(n, k) = n!/(k!*(n-k))
     //Which can be simplified for any grind a * b -> [(a+b)!]/[a!* b!]
     //Need to keep in mind that this problems, probably, have a simple mathematical solution
     //so:
-    unsigned long a = 20;
-    unsigned long b = 20;
+    ulong_t a = 20;
+    ulong_t b = 20;
 
+    //mpz_class big_result = BigFactorial(a + b) / (BigFactorial(a) * BigFactorial(b));
     BigInt_t big_result = BigFactorial(a + b) / (BigFactorial(a) * BigFactorial(b));
 
-    ProblemsResults::Instance()->SetStoredResult("15", big_result.str());
-    //MessageWriter::Instance()->WriteToOutputBox("P015: "+big_result.get_str()+ " in "+Clock::Instance()->StopAndReturnClock(clock_id) + " ms");
-    //return ("P015: "+big_result.get_str()+ " in "+Clock::Instance()->StopAndReturnClock(clock_id) + " ms");
+    return (big_result.get_str());
     //}
 
 }
 
-void Problem016()
+std::string Problem016()
 {
-    //auto clock_id = Clock::Instance()->StartClock();
+    BigInt_t big_number{0};
 
-    BigInt_t big_number;
+    mpz_ui_pow_ui(big_number.get_mpz_t(), 2, 1000);
 
-    big_number = boost::multiprecision::pow( BigInt_t(2),1000);
-
-    std::string big_number_string=big_number.str();
+    std::string big_number_string=big_number.get_str();
 
     int digit_sum=0;
     for(char& digit : big_number_string)
@@ -248,15 +334,11 @@ void Problem016()
         digit_sum+=digit-'0';
     }
 
-    ProblemsResults::Instance()->SetStoredResult("16", std::to_string(digit_sum));
-    //MessageWriter::Instance()->WriteToOutputBox("P016: "+std::to_string(digit_sum)+ " in "+Clock::Instance()->StopAndReturnClock(clock_id) + " ms");
-    //return ("P016: "+std::to_string(digit_sum)+ " in "+Clock::Instance()->StopAndReturnClock(clock_id) + " ms");
+    return (std::to_string(digit_sum));
 }
 
-void Problem017()
+std::string Problem017()
 {
-    //auto clock_id = Clock::Instance()->StartClock();
-
     std::vector<std::string> digit_names;//"name" of each individual digit
     digit_names.insert(digit_names.end(), "zero");
     digit_names.insert(digit_names.end(), "one");
@@ -383,15 +465,11 @@ void Problem017()
 
     }
 
-    ProblemsResults::Instance()->SetStoredResult("17", std::to_string(total_letters));
-    //MessageWriter::Instance()->WriteToOutputBox("P017: "+std::to_string(total_letters)+ " in "+Clock::Instance()->StopAndReturnClock(clock_id) + " ms");
-    //return ("P017: "+std::to_string(total_letters)+ " in "+Clock::Instance()->StopAndReturnClock(clock_id) + " ms");
+    return (std::to_string(total_letters));
 }
 
-void Problem018()
+std::string Problem018()
 {
-    //auto clock_id = Clock::Instance()->StartClock();
-
     std::ifstream numbers_file ("data/problems/p018");
     std::string line;
 
@@ -511,23 +589,19 @@ void Problem018()
             }
         }
 
-        ProblemsResults::Instance()->SetStoredResult("18", std::to_string(max_value));
-         //MessageWriter::Instance()->WriteToOutputBox("P018: "+std::to_string(max_value)+ " in "+Clock::Instance()->StopAndReturnClock(clock_id) + " ms");
-         //return ("P018: "+std::to_string(max_value)+ " in "+Clock::Instance()->StopAndReturnClock(clock_id) + " ms");
+         return (std::to_string(max_value));
     }
     else
     {
         MessageWriter::Instance()->WriteLineToConsole("ERROR: failed to open input file at \"data/problems/p018\"");
         //MessageWriter::Instance()->WriteToOutputBox("ERROR: failed to open input file at \"data/problems/p018\"");
-        //return ("ERROR: failed to open input file at \"data/problems/p018\"");
+        return ("ERROR: failed to open input file at \"data/problems/p018\"");
     }
 
 }
 
-void Problem019()
+std::string Problem019()
 {
-    //auto clock_id = Clock::Instance()->StartClock();
-
     int y = 0;
     int d = 1;
     int total_sundays_day1 = 0;
@@ -550,31 +624,25 @@ void Problem019()
         }
     }
 
-    ProblemsResults::Instance()->SetStoredResult("19", std::to_string(total_sundays_day1));
-    //MessageWriter::Instance()->WriteToOutputBox("P019: "+std::to_string(total_sundays_day1)+ " in "+Clock::Instance()->StopAndReturnClock(clock_id) + " ms");
-    //return ("P019: "+std::to_string(total_sundays_day1)+ " in "+Clock::Instance()->StopAndReturnClock(clock_id) + " ms");
+    return (std::to_string(total_sundays_day1));
 }
 
-void Problem020()
+std::string Problem020()
 {
-    //auto clock_id = Clock::Instance()->StartClock();
-
     //this multitask implementation is not needed. I used it to test std::async, and as it works, I kept it
     std::future<BigInt_t> future_1_50 = std::async(std::launch::async, &BigPartialFactorial, 1,50);
     std::future<BigInt_t> future_51_70 = std::async(std::launch::async, &BigPartialFactorial, 51,70);
     std::future<BigInt_t> future_71_100 = std::async(std::launch::async, &BigPartialFactorial, 71,100);
 
     BigInt_t final_result = future_1_50.get() * future_51_70.get() * future_71_100.get();
-    std::string factorial_100 = final_result.str();
+    std::string factorial_100 = final_result.get_str();
 
-    final_result = 0;//clear mpz_class var as we will reuse it to calculate the last result
+    final_result = 0;//clear BigInt_t var as we will reuse it to calculate the last result
     for(auto& letter : factorial_100)
     {
         if(letter != '0')//no need to sum the 0s
             final_result += (int)(letter - '0');
     }
 
-    ProblemsResults::Instance()->SetStoredResult("20", final_result.str());
-    //MessageWriter::Instance()->WriteToOutputBox("P020: "+final_result.get_str()+ " in "+Clock::Instance()->StopAndReturnClock(clock_id) + " ms");
-    //return ("P020: "+final_result.get_str()+ " in "+Clock::Instance()->StopAndReturnClock(clock_id) + " ms");
+    return (final_result.get_str());
 }

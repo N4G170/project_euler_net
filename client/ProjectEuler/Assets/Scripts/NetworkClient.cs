@@ -21,5 +21,6 @@ public class NetworkClient : MonoBehaviour
 	public Text m_error_text;
 
 	public virtual void Connect (){}
+	public virtual void RequestList(){}
 	public virtual void RequestProblem(string problem_number){}
 }

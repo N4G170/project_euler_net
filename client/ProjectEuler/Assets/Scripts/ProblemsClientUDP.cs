@@ -57,11 +57,11 @@ public class ProblemsClientUDP : NetworkClient
 
 			if(ip.Length == 0)
 			{
-				ip = "51.255.196.122";
+				ip = m_ip_input.placeholder.GetComponent<Text>().text;//"127.0.0.1";
 			}
 			if(port.Length == 0)
 			{
-				port = "45456";
+				port = m_port_input.placeholder.GetComponent<Text>().text;//"45456";
 			}
 
 			//check if inserted ip is valid
@@ -84,10 +84,25 @@ public class ProblemsClientUDP : NetworkClient
 			m_receive_thread.Start ();
 
 			m_connect_panel.SetActive(false);
+
+			RequestList();
+
 		}
 		catch(System.Exception e) 
 		{
 			m_error_text.text = e.Message;
+		}
+	}
+
+	public override void RequestList()
+	{
+		if (m_client != null) 
+		{
+			string str = "LIST|END|";
+
+			m_send_bytes = m_encoding.GetBytes (str);
+
+			m_client.Send (m_send_bytes, m_send_bytes.Length);
 		}
 	}
 
@@ -153,8 +168,8 @@ public class ProblemsClientUDP : NetworkClient
 			m_received_data.Enqueue(message);
 			m_data_mutex.ReleaseMutex ();
 
-			if(message.Length > 0)
-				Debug.Log (message);
+			//if(message.Length > 0)
+				//Debug.Log (message);
 		}
 
 	}
@@ -177,19 +192,23 @@ public class ProblemsClientUDP : NetworkClient
 	{
 		string[] exploded_data = data.Split ('|');
 
-		if (exploded_data [0].CompareTo ("INFO") == 0) 
+		if (exploded_data [0].CompareTo ("INFO") == 0)
 		{
 			m_server_text.text += exploded_data [1] + "\n";
 		} 
 		else if (exploded_data [0].CompareTo ("RESULT") == 0)
 		{
 			//save the result for later use
-			m_problems_input.StoreResult (exploded_data[1], exploded_data[2]);
+			m_problems_input.StoreResult (exploded_data [1], exploded_data [2]);
 
-			while (exploded_data[1].Length < 3)
-				exploded_data[1] = "0" + exploded_data[1];
+			while (exploded_data [1].Length < 3)
+				exploded_data [1] = "0" + exploded_data [1];
 
-			m_results_text.text +="P"+exploded_data[1]+": "+exploded_data[2]+"\n";
+			m_results_text.text += "P" + exploded_data [1] + ": " + exploded_data [2] + "\n";
+		} 
+		else if (exploded_data [0].CompareTo ("LIST") == 0)
+		{
+			m_problems_input.SetList (exploded_data);
 		}
 	}
 

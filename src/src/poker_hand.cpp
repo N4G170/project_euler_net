@@ -1,4 +1,4 @@
-#include "poker_hand.h"
+#include "poker_hand.hpp"
 
 #include <algorithm>
 

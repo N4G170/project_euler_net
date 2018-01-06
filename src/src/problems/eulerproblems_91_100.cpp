@@ -1,4 +1,4 @@
-#include "eulerproblems.h"
+#include "eulerproblems.hpp"
 
 #include <fstream>
 #include <string>
@@ -8,110 +8,114 @@
 #include <utility>
 #include <bitset>
 #include <cmath>
+#include <algorithm>
 
-#include "message_writer.h"
-#include "clock.h"
-#include "graphs.h"
+#include "message_writer.hpp"
+#include "clock.hpp"
+#include "graphs_and_grids.hpp"
 #include "utils.hpp"
+#include "defines.hpp"
+#include "enums.hpp"
 
-//Once again, the implementation is Mathematically correct
-//and once again it suffers from precision errors
-//I've calculated the area based on sides that the function marks as correct and I noticed that the decimal elements of the area are missing
-//I've yet to find the reason why
+
+std::string Problem092()
+{
+    int limit{10000000};
+    int target_element{89};
+    int break_element{1};
+    int total{0};
+    //first = source number; second = target number
+    // std::unordered_map<int,int> elements_cache;//for some reason the use of this cache makes the algorithm run +- 4x slower
+    std::vector<int> powers(10);
+
+    //prepare powers
+    for(unsigned int i{0}; i < powers.size(); i++)
+        powers[i] = i * i;
+
+    for(int i = 1; i < limit; i++)
+    {
+        int number{i};
+
+        while(number != break_element && number != target_element)
+        {
+            int element{0};
+
+            // if(elements_cache[number] > 0)//element already calculated
+            // {
+            //     number = elements_cache[number];
+            // }
+            // else
+            // {
+                //break number into digits
+                while(number > 0)
+                {
+                    element += powers[number % 10];
+                    number /= 10;
+                }
+                number = element;
+            // }
+        }//while
+
+        if(number == target_element)//found target loop
+            total++;
+    }
+
+    // MessageWriter::Instance()->WriteToOutputBox("P092: "+std::to_string(total)+ " in "+Clock::Instance()->StopAndReturnClock(clock_id) + " ms");
+    return std::to_string(total);
+}
+
+
 std::string Problem094()
 {
-    //auto clock_id = Clock::Instance()->StartClock();
+    long_t perimeter_sum = 0;
+    long_t perimeter_limit = 1000000000;
 
-    unsigned long long perimeter_sum = 0;
+    long_t side{0};
+    long_t perimeter_1{0};
+    long_t perimeter_2{0};
 
-    //unsigned int perimeter_limit = 1 000 000 000;
-    unsigned long perimeter_limit = 100000000;
-
-    //as we are working with integral numbers, as stated in the problem, the base cannot be an odd number, as we will divide it by 2 (area = height*base/2)
-    for(unsigned int side = 3; ; side += 2 )
+    auto HasIntegralArea = [](const long_t& a, const long_t& b)->bool
     {
-        long double base_1 = side + 1;
-        long double base_2 = side - 1;
-        long double perimeter_1 = side * 2 + base_1;
-        long double perimeter_2 = side * 2 + base_2;
+        //if(b % 2 != 0)
+        //    return false;
+
+        long_t h_squared{ (a * a - b * b / 4) };
+        long_t root_of_h{ static_cast<long_t>(std::sqrt(h_squared)) };
+
+        if(root_of_h * root_of_h == h_squared && h_squared > 1)
+        {
+            // std::cout<<"("<<a<<","<<a<<","<<b<<") - "<< root_of_h<<" ^2 - "<<(root_of_h * root_of_h) <<" | "<< h_squared <<"\n";
+            return true;
+        }
+        return false;
+    };
+
+    for(side = 1; perimeter_1 < perimeter_limit || perimeter_2 < perimeter_limit; side += 2 )//b has to be even
+    {
+        perimeter_1 = side * 3 + 1;
+        perimeter_2 = side * 3 - 1;
 
         if(perimeter_1 < perimeter_limit )//side + 1
         {
             //Heron of Alexandria area formula a=SQRT(s(s-a)(s-b)(s-c)) where s = perimeter/2
-            long double s = perimeter_1/2.0;
-            long double a = s * (s-side)*(s-side)*(s-base_1);
-            long double area = std::sqrt( a );
+            // s = (perimeter_1/BigFloat_t(2));
+            // a = s * (s-side) * (s-side) * (s-base_1);
+            // area = boost::multiprecision::sqrt( a );
 
-            std::cout.precision(25);
-                std::cout<<"("<<side<<","<<side<<","<<base_1<<") P:"<<perimeter_1<<" A:"<<area<<" S:"<<s<<" a:"<<a<<std::endl;
-
-            if( std::fmod(area, 1) == 0 )
-            {
+            if(HasIntegralArea(side, side + 1))
                 perimeter_sum += perimeter_1;
-//                std::cout.precision(25);
-//                std::cout<<"("<<side<<","<<side<<","<<base_1<<") P:"<<perimeter_1<<" A:"<<area<<" S:"<<s<<" a:"<<a<<std::endl;
-                //std::cout<<"("<<side<<","<<side<<","<<base<<") B:"<<b<<" H:"<<h<<" hei:"<<height<<std::endl;
-            }
         }
         if(perimeter_2 < perimeter_limit )//side - 1
         {
             //Heron of Alexandria area formula a=SQRT(s(s-a)(s-b)(s-c)) where s = perimeter/2
-            long double s = perimeter_2/2.0;
-            long double a = s * (s-side)*(s-side)*(s-base_2);
-            long double area = std::sqrt( a );
+            // s = (perimeter_2/BigFloat_t(2));
+            // a = s * (s-side)*(s-side)*(s-base_2);
+            // area = boost::multiprecision::sqrt( a );
 
-            std::cout.precision(25);
-            std::cout<<"("<<side<<","<<side<<","<<base_2<<") P:"<<perimeter_2<<" A:"<<area<<" S:"<<s<<" a:"<<a<<std::endl;
-           // MessageWriter::Instance()->WriteToOutputBox("P094: "+std::to_string(area));
-
-            if( std::fmod(area, 1) == 0 )
-            {
-                perimeter_sum += perimeter_1;
-//                std::cout.precision(25);
-//                std::cout<<"("<<side<<","<<side<<","<<base_2<<") P:"<<perimeter_2<<" A:"<<area<<" S:"<<s<<" a:"<<a<<std::endl;
-                //std::cout<<"("<<side<<","<<side<<","<<base<<") B:"<<b<<" H:"<<h<<" hei:"<<height<<std::endl;
-            }
+            if(HasIntegralArea(side, side - 1))
+                perimeter_sum += perimeter_2;
         }
-        if(perimeter_1 > perimeter_limit && perimeter_2 > perimeter_limit)
-            break;
-
-//        //from Pitagoras Theorem, c^2 = a^2 + b^2
-//        //we have side^2 = (base/2)^2 + a^2 <=> a^2 = side^2 - (base/2)^2 <=> a = sqrt(side^2 - (base/2)^2)
-//        unsigned long half_base = base / 2;
-//        long double b = std::pow(half_base, 2);
-//        long double h = std::pow(side, 2);
-//
-//        //the 'a' from the formula
-//        long double height = std::sqrt(h - b);
-//
-//        if( std::fmod(height, 1) == 0 )//no need to calculate the area, as we will, always, have an integral area if the height is integral
-//        {
-//            perimeter_sum += perimeter;
-//            std::cout<<"("<<side<<","<<side<<","<<base<<") P:"<<perimeter<<" A:"<<(height*half_base)<<std::endl;
-//            //std::cout<<"("<<side<<","<<side<<","<<base<<") B:"<<b<<" H:"<<h<<" hei:"<<height<<std::endl;
-//        }
-
-//        //Heron of Alexandria area formula a=SQRT(s(s-a)(s-b)(s-c)) where s = perimeter/2
-//        long double s = perimeter/2.0;
-//        long double a = s * (s-side)*(s-side)*(s-base);
-//        long double area = std::sqrt( a );
-//
-//        if( std::fmod(area, 1) == 0 )
-//        {
-//            perimeter_sum += perimeter;
-//            //std::cout.precision(25);
-//            //std::cout<<"("<<side<<","<<side<<","<<base<<") P:"<<perimeter<<" A:"<<area<<" S:"<<s<<" a:"<<a<<std::endl;
-//            //std::cout<<"("<<side<<","<<side<<","<<base<<") B:"<<b<<" H:"<<h<<" hei:"<<height<<std::endl;
-//        }
-
-        //if(side == 5)
-            //std::cout<<side<<","<<side<<","<<base<<" - "<<(base/2)*height<<std::endl;
     }
 
-    std::cout<<perimeter_sum<<std::endl;
-    //MessageWriter::Instance()->WriteToOutputBox("P036: "+std::to_string(double_palindrome_sum)+ " in "+Clock::Instance()->StopAndReturnClock(clock_id) + " ms");
-
-    //return ("P036: "+std::to_string(double_palindrome_sum)+ " in "+Clock::Instance()->StopAndReturnClock(clock_id) + " ms");
-    return "";
+    return std::to_string(perimeter_sum);
 }
-

@@ -1,7 +1,7 @@
 #include <iostream>
 #include <chrono>
 
-#include "message_writer.h"
+#include "message_writer.hpp"
 //needed to be able to write 0.5s as a valid time
 using namespace std::chrono_literals;
 
@@ -37,15 +37,12 @@ void MessageWriter::ProcessConsoleQueue()
 {
     while(m_running)
     {
-        //std::unique_lock<std::mutex> lk(m_mutex);
-        //m_wait_condition.wait(lk, [this] { return !this->m_message_queue.empty(); } );
-
-
         if(!m_console_message_queue.empty())
         {
             m_console_mutex.lock();
 
             std::cout << m_console_message_queue.front();
+            std::cout.flush();
             m_console_message_queue.pop();
 
             m_console_mutex.unlock();
@@ -59,6 +56,15 @@ void MessageWriter::ProcessConsoleQueue()
 
     }
 }
+
+void MessageWriter::LogError(const std::string& message)
+{
+    //lock->write->unlock
+    m_console_mutex.lock();
+    m_console_message_queue.push(message + "\n");
+    m_console_mutex.unlock();
+}
+
 
 void MessageWriter::WriteToConsole(const std::string& message)
 {

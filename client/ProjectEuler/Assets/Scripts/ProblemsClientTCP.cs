@@ -7,6 +7,7 @@ using System.Net;
 using System.Text;
 using System.Net.Sockets;
 using System.Threading;
+using System;
 
 
 public class ProblemsClientTCP : NetworkClient 
@@ -48,7 +49,7 @@ public class ProblemsClientTCP : NetworkClient
 
 			if(ip.Length == 0)
 			{
-				ip = "51.255.196.122";
+				ip = "127.0.0.1";
 			}
 			if(port.Length == 0)
 			{
@@ -76,10 +77,40 @@ public class ProblemsClientTCP : NetworkClient
 			StartCoroutine(KeepAlive());
 
 			m_connect_panel.SetActive(false);
+
+			//as the connection can take some time (handshake and stuff) I need to request the list multiple times to avoid failure
+			StartCoroutine (RequestListCoroutine());
 		}
 		catch(System.Exception e) 
 		{
 			m_error_text.text = e.Message;
+		}
+	}
+
+	IEnumerator RequestListCoroutine()
+	{
+		var wait = new WaitForSeconds (0.05f);
+
+		RequestList ();
+		yield return wait;
+		RequestList ();
+		yield return wait;
+		RequestList();
+		yield return wait;
+		RequestList();
+		yield return wait;
+		RequestList ();
+	}
+
+	public override void RequestList()
+	{
+		if (m_client != null && m_client.Connected) 
+		{
+			string str = "LIST|END|";
+
+			m_send_bytes = m_encoding.GetBytes (str);
+
+			m_client_stream.Write (m_send_bytes, 0, m_send_bytes.Length);
 		}
 	}
 
@@ -142,10 +173,21 @@ public class ProblemsClientTCP : NetworkClient
 		{
 			// Read can return anything from 0 to numBytesToRead. 
 			// This method blocks until at least one byte is read.
-			m_client_stream.Read (m_receive_bytes, 0, 64);
+			//m_client_stream.Read (m_receive_bytes, 0, 64);
 
-			string message = Encoding.UTF8.GetString (m_receive_bytes);
-			message.Trim ();
+			string message = "";
+
+			while (m_client_stream.DataAvailable)
+			{
+				m_client_stream.Read (m_receive_bytes, 0, 64);
+				message += Encoding.UTF8.GetString (m_receive_bytes);
+				message.Trim ();
+
+				//clear Array. If next read does not use athe entire array, we need to clean it after using it
+				Array.Clear (m_receive_bytes, 0, 64);
+			}
+
+			//message.Trim ();
 			//mutex to control the access to the queue as it is being used by this thread and the main thread.
 			//it is needed because only the main thread can access some properties of UI elements, so I have to pass the data to it,
 			//by using the queue
@@ -153,8 +195,8 @@ public class ProblemsClientTCP : NetworkClient
 			m_received_data.Enqueue(message);
 			m_data_mutex.ReleaseMutex ();
 
-			if(message.Length > 0)
-				Debug.Log (message);
+			//if(message.Length > 0)
+				//Debug.Log (message);
 		}
 
 	}
@@ -186,10 +228,14 @@ public class ProblemsClientTCP : NetworkClient
 			//save the result for later use
 			m_problems_input.StoreResult (exploded_data[1], exploded_data[2]);
 
-			while (exploded_data[1].Length < 3)
+			/*while (exploded_data[1].Length < 3)
 				exploded_data[1] = "0" + exploded_data[1];
 
-			m_results_text.text +="P"+exploded_data[1]+": "+exploded_data[2]+"\n";
+			m_results_text.text +="P"+exploded_data[1]+": "+exploded_data[2]+"\n";*/
+		}
+		else if (exploded_data [0].CompareTo ("LIST") == 0)
+		{
+			m_problems_input.SetList (exploded_data);
 		}
 	}
 

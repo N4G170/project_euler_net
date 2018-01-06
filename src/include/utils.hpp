@@ -1,46 +1,60 @@
-#ifndef UTILS
-#define UTILS
-
-#include "defines.hpp"
+#ifndef UTILS_HPP
+#define UTILS_HPP
 
 #include <vector>
 #include <map>
 #include <string>
+
+#include "defines.hpp"
+
+/**
+ * @brief Count the number of digits in a number
+ * @param number - the number to be processed
+ * @return Number of digits in a number
+ */
+unsigned int NumberOfDigits(long number);
+
+/**
+ * @brief Convert a char to the number it represents
+ * @param character - the character to be converted
+ * @return The literal value of the char
+ */
+unsigned int CharToUnsignedInt(char character);
 
 /**
  * @brief Sieve Of Eratosthenes - an implemention of the prime number sieve created by the greek mathematician Eratosthenes of Cyrene
  * @param limit - upper limit for the sieve pool
  * @return returns a vector containing the result of the sieve for every number from 0 to limit
  */
-std::vector<bool> SieveOfEratosthenes(const unsigned long& limit);
+std::vector<bool> SieveOfEratosthenes(const ulong_t& limit);
 
 /**
  * @brief PrimeBoolVectorToIntVector
- * @param sieve_primes - the result from a call to the funcion @see SieveOfEratosthenes(unsigned long limit)
+ * @param sieve_primes - the result from a call to the funcion @see SieveOfEratosthenes(ulong_t limit)
  * @return returns a vector only with the numbers that are primes
  */
-std::vector<unsigned long> PrimeBoolVectorToIntVector(std::vector<bool> sieve_primes);
+std::vector<ulong_t> PrimeBoolVectorToIntVector(std::vector<bool> sieve_primes);
 
 /**
  * @brief PrimeNumberPoolofSize - calculates prime numbers untils their total count == size
  * @param size - the number of primes to be found
  * @return returns vector with the prime numbers
  */
-std::vector<unsigned long> PrimeNumberPoolOfSize(unsigned int size);
+std::vector<ulong_t> PrimeNumberPoolOfSize(unsigned int size);
 
 /**
  * @brief IsPrime - check if a number is prime (this implementations is based on the rule "All primes greater than 3 can be written in the form 6k+/-1.")
  * @param number - the number to be checked
  * @return true/false - is the given number a prime
  */
-bool IsPrime(unsigned long number);
+bool IsPrime(ulong_t number);
 
 /**
  * @brief IsPalindrome - check if a given number is a palindrome (you can read it the same way left -> right and right -> left)
  * @param number - the number to be checked
  * @return true/false - if the number is or is not a palindrome
  */
-bool IsPalindrome(unsigned long long number, unsigned int base = 10);
+bool IsPalindrome(ulong_t number, unsigned int base = 10);
 
 /**
  * @brief GeneratePalindrome - Generates a plalindrome based on a numbers in a given base
@@ -77,7 +91,7 @@ int GreatestCommonDivisor(int a, int b);
  * @param number - number to be factorized (must be positive)
  * @return returns a map with the pairs of the factors and their exponent
  */
-std::map<unsigned long,unsigned long> PrimeFactorsOfNumber(unsigned long number);
+std::map<ulong_t,ulong_t> PrimeFactorsOfNumber(ulong_t number);
 
 /**
  * @brief PrimeFactorsOfNumber - Factorize a number into its prime factors
@@ -85,23 +99,23 @@ std::map<unsigned long,unsigned long> PrimeFactorsOfNumber(unsigned long number)
  * @param prime_numbers - pool of prime numbers to be used
  * @return returns a map with the pairs of the factors and their exponent
  */
-std::map<unsigned long,unsigned long> PrimeFactorsOfNumber(unsigned long number, const std::vector<unsigned long>& prime_numbers);
+std::map<ulong_t,ulong_t> PrimeFactorsOfNumber(ulong_t number, const std::vector<ulong_t>& prime_numbers);
 
 /**
  * @brief Calculates the proper divisors (mod == 0) of a given number
  * @return std::vector with all the proper divisors
  */
-std::vector<unsigned long> ProperDivisors(const unsigned long& number);
+std::vector<ulong_t> ProperDivisors(const ulong_t& number);
 
 /**
  * @brief Calculates the proper divisors (mod == 0) of a given number and calculats its sum
  * @return Sum of all the proper divisors
  */
-unsigned long SumOfProperDivisors(const unsigned long& number);
+ulong_t SumOfProperDivisors(const ulong_t& number);
 
 /**
  * @brief Check if two numbers form two consecutives links of a chain
- * (NOTE: function specific toa a single problem, may need to make generic in the future)
+ * (NOTE:10 function specific to a single problem, may need to make generic in the future, or change to lamda)
  * @param divisor - the factor to be used as the left and right
  * @return Whether or not the numbers form links of a chain
  */
@@ -112,25 +126,25 @@ bool AreChainNumbers(unsigned int left, unsigned int right, unsigned int divisor
  * @brief Calculates Factorial of a number
  * @return The factorial
  */
-unsigned long Factorial(unsigned long number);
+ulong_t Factorial(ulong_t number);
 
 /**
  * @brief Calculates Factorial of a number, using GMP big numbers
  * @return The GMP big number factorial
  */
-BigInt_t BigFactorial(unsigned long number);
+BigInt_t BigFactorial(ulong_t number);
 
 /**
  * @brief Calculates a partial factorial of a number
  * @return The partial factorial
  */
-unsigned long PartialFactorial(unsigned long start_number, unsigned long end_number);
+ulong_t PartialFactorial(ulong_t start_number, ulong_t end_number);
 
 /**
  * @brief Calculates a partial factorial of a number, using GMP big numbers
  * @return The GMP big number partial factorial
  */
-BigInt_t BigPartialFactorial(unsigned long start_number, unsigned long end_number);
+BigInt_t BigPartialFactorial(ulong_t start_number, ulong_t end_number);
 //}
 
 //{ String Manipulation
@@ -179,45 +193,18 @@ std::vector< std::string > Explode(const std::string& str, const std::string& se
  * @brief Calculates the alphabetical value of a word, based on the position of each letter in the alphabet
  * @return The alphabetical value
  */
-unsigned long WordAlphabeticalValue(const std::string& word, std::map<char, int>& values);
+ulong_t WordAlphabeticalValue(const std::string& word, std::map<char, int>& values);
 
 //}
 
 
-//{ENUMS
-enum Weekdays
-{
-    SUNDAY,
-    MONDAY,
-    TUESDAY,
-    WEDNESDAY,
-    THURSDAY,
-    FRIDAY,
-    SATURDAY
-};
+double Phi(const unsigned int& number, const std::map<ulong_t,ulong_t>& factors);
+long long Phi(const unsigned int& number, const std::vector<ulong_t>& primes);
+bool IsPermutation(long number_1, long number_2);
 
-enum Months
-{
-    JANUARY,
-    FEBRUARY,
-    MARCH,
-    APRIL,
-    MAY,
-    JUNE,
-    JULY,
-    AUGUST,
-    SEPTEMBER,
-    OCTOBER,
-    NOVEMBER,
-    DECEMBER
-};
-
-//}
+std::vector<unsigned short> GetDigits(long number);
+ulong_t ConcatenateDigits(const std::vector<unsigned short>& digits);
 
 
 
-
-#endif // UTILS
-
-
-
+#endif // UTILS_HPP

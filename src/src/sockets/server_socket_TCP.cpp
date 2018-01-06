@@ -1,13 +1,13 @@
 #include "server_socket_TCP.hpp"
 #include "utils.hpp"
-#include "eulerproblems.h"
+#include "problems_results.hpp"
 
 // Static constants for the ServerSocket class
 const std::string ServerSocketTCP::SERVER_NOT_FULL = "OK";
 const std::string ServerSocketTCP::SERVER_FULL     = "FULL";
 
 // ServerSocket constructor
-ServerSocketTCP::ServerSocketTCP(unsigned int port, unsigned int buffer_size, unsigned int max_clients)
+ServerSocketTCP::ServerSocketTCP(unsigned int port, unsigned int buffer_size, unsigned int max_clients, ProblemsResults* results): m_results{results}
 {
 	m_port = port;                      // The m_port number on the server we're connecting to
 	m_buffer_size = buffer_size;                // The maximum size of a message
@@ -17,7 +17,7 @@ ServerSocketTCP::ServerSocketTCP(unsigned int port, unsigned int buffer_size, un
     m_client_sockets = std::vector<TCPsocket>(m_max_clients, nullptr);
     m_free_sockets = std::vector<bool>(m_max_clients, true);
 
-	m_buffer = new char[m_buffer_size];            // Create the traSDLNet_GetErrornsmission buffer character array
+	m_buffer = new char[m_buffer_size];            // Create the SDLNet_GetErrornsmission buffer character array
 
 	m_client_count = 0;
 
@@ -128,7 +128,7 @@ ServerSocketTCP::~ServerSocketTCP()
 	SDLNet_FreeSocketSet(m_socket_set);
 
 	// Release any properties on the heap
-	delete m_buffer;
+	// delete m_buffer;
 }
 
 void ServerSocketTCP::UpdateSocketSet()
@@ -214,9 +214,7 @@ void ServerSocketTCP::CheckForNewConnections()
 			// Shutdown, disconnect, and close the socket to the client
 			SDLNet_TCP_Close(temp_sock);
 		}
-
 	} //if (SDLNet_SocketReady(m_server_socket) != 0)
-
 }//CheckForNewConnections
 
 // Function to do something appropriate with the detected socket activity
@@ -236,12 +234,18 @@ void ServerSocketTCP::ProcessSocketActivity(unsigned int client_number)
     //check the type of the message
     if(exploded_message[0].compare("REQUEST") == 0)
     {
-        ProblemsResults::Instance()->RequestProblem(exploded_message[1], client_number, this);
+        m_results->RequestProblem(exploded_message[1], client_number, this);
 
         buffer_contents = "INFO|Processing TCP request for problem "+exploded_message[1]+"|END";
 
         SendMessage(client_number, buffer_contents);
     }
+	else if(exploded_message[0].compare("LIST") == 0)
+	{
+		buffer_contents = ProblemsResults::problems_list;
+
+        SendMessage(client_number, buffer_contents);
+	}
 
 }//ProcessSocketActivity
 
@@ -335,4 +339,12 @@ void ServerSocketTCP::SendMessage(int target_index, char* message)
 	int message_size = strlen(m_buffer) + 1;
 
 	SDLNet_TCP_Send(m_client_sockets[target_index], (void *)m_buffer, message_size);
+}
+
+void ServerSocketTCP::SendList(int target_index)
+{
+    if(m_client_sockets[target_index] == nullptr)//client no longer exists
+        return;
+
+	SDLNet_TCP_Send(m_client_sockets[target_index], (void *)const_cast<char*>(ProblemsResults::problems_list.data()), ProblemsResults::problems_list.size());
 }

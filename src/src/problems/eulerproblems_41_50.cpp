@@ -1,8 +1,8 @@
-#include "eulerproblems.h"
+#include "eulerproblems.hpp"
 #include "utils.hpp"
-#include "message_writer.h"
+#include "message_writer.hpp"
 
-#include "clock.h"
+#include "clock.hpp"
 
 #include <map>
 #include <set>
@@ -10,13 +10,12 @@
 #include <vector>
 #include <string>
 #include <iostream>
-#include "defines.hpp"
+#include "defines.hpp"//big numbers
 #include <fstream>
+#include <array>
 
-void Problem042()
+std::string Problem042()
 {
-    //auto clock_id = Clock::Instance()->StartClock();
-
     std::ifstream file ("data/problems/p042");
     std::string line;
 
@@ -36,7 +35,7 @@ void Problem042()
         file.close();
     }
 
-    unsigned long total_triangle_words = 0;
+    ulong_t total_triangle_words = 0;
 
     if(!words.empty())
     {
@@ -65,20 +64,16 @@ void Problem042()
         }
     }
 
-    ProblemsResults::Instance()->SetStoredResult("42", std::to_string(total_triangle_words));
-    //MessageWriter::Instance()->WriteToOutputBox("P047: "+std::to_string(current_fibonacci_term)+ " in "+Clock::Instance()->StopAndReturnClock(clock_id) + " ms");
-    //return ("P042: "+std::to_string(total_triangle_words)+ " in "+Clock::Instance()->StopAndReturnClock(clock_id) + " ms");
+    return (std::to_string(total_triangle_words));
 }
 
 std::string Problem047()//does not work yet, no idea what the problem is
 {
-    auto clock_id = Clock::Instance()->StartClock();
+    std::vector<ulong_t> primes = PrimeBoolVectorToIntVector(SieveOfEratosthenes(1000000));
 
-    std::vector<unsigned long> primes = PrimeBoolVectorToIntVector(SieveOfEratosthenes(1000000));
-
-    std::set<std::pair<unsigned long, unsigned long>> unique_factors;
-    std::vector<std::map<unsigned long, unsigned long>> all_factors;
-    unsigned long first_of_sequence = 0;
+    std::set<std::pair<ulong_t, ulong_t>> unique_factors;
+    std::vector<std::map<ulong_t, ulong_t>> all_factors;
+    ulong_t first_of_sequence = 0;
 
     unsigned int limit = 1000000;
 
@@ -115,28 +110,93 @@ std::string Problem047()//does not work yet, no idea what the problem is
         first_of_sequence = i;
     }
 
-
-    //MessageWriter::Instance()->WriteToOutputBox("P047: "+std::to_string(current_fibonacci_term)+ " in "+Clock::Instance()->StopAndReturnClock(clock_id) + " ms");
-    return ("P047: "+std::to_string(first_of_sequence)+ " in "+Clock::Instance()->StopAndReturnClock(clock_id) + " ms");
+    return (std::to_string(first_of_sequence));
 }
 
 
-void Problem048()
+std::string Problem048()
 {
-    //auto clock_id = Clock::Instance()->StartClock();
-
-    BigInt_t number = 0;
-    BigInt_t power = 0;
+    BigInt_t number{0};
+    BigInt_t power{0};
 
     for(int i = 1; i < 1001; i++)
     {
-        power = boost::multiprecision::pow( BigInt_t(i), i);//big numbers pow function
+        mpz_ui_pow_ui(power.get_mpz_t(), i, i);
         number += power;
     }
 
-    std::string result = number.str().substr(number.str().size() - 10);
-
-    ProblemsResults::Instance()->SetStoredResult("48", result);
+    std::string result = number.get_str().substr(number.get_str().size() - 10);
     //MessageWriter::Instance()->WriteToOutputBox("P047: "+std::to_string(current_fibonacci_term)+ " in "+Clock::Instance()->StopAndReturnClock(clock_id) + " ms");
-    //return ("P048: "+result+ " in "+Clock::Instance()->StopAndReturnClock(clock_id) + " ms");
+    return (result);
+}
+
+std::string Problem049()
+{
+    std::string result;
+
+    std::vector<ulong_t> primes = PrimeBoolVectorToIntVector( SieveOfEratosthenes(10000));//only 4 digit primes are needed
+
+    // auto IsPermutation = [](long number_1, long number_2)->bool
+    // {
+    //     std::array<short, 10> digits_count{{ 0,0,0,0,0,0,0,0,0,0 }};//only in C++11 we need to use {{}}. since c++14, {} are ok, but since my lint keeps marking it with a warnning, I used {{}}
+    //
+    //     while(number_1 != 0)
+    //     {
+    //         digits_count[ number_1 % 10 ]++;
+    //         number_1 /= 10;
+    //     }
+    //
+    //     while(number_2 != 0)
+    //     {
+    //         digits_count[ number_2 % 10 ]--;
+    //         number_2 /= 10;
+    //     }
+    //
+    //     for( short digit_count : digits_count)
+    //         if(digit_count > 0)
+    //             return false;
+    //
+    //     return true;
+    // };
+
+    auto FindPrime = [&primes](ulong_t prime, unsigned int start_index)->bool
+    {
+        for( ; start_index < primes.size(); start_index++)
+        {
+            if(primes[start_index] == prime)
+                return true;
+        }
+
+        return false;
+    };
+
+    //as we only need 4 digit numbers, we remove all of the smaller ones
+    int last_to_remove{};
+    for(last_to_remove = 0; NumberOfDigits(primes[last_to_remove]) < 4; last_to_remove++);
+
+    primes.erase( primes.begin(), primes.begin()+last_to_remove);
+
+    for(unsigned int i{0}; i < primes.size(); i++)
+    {
+        for(unsigned int p = i + 1; p < primes.size(); p++)
+        {
+            int difference = primes[p] - primes[i];//get the difference with the "next" prime and use it to calculate the third term
+
+            if(FindPrime(primes[p] + difference, p))
+            {
+                if( IsPermutation( primes[i], primes[p] ) && IsPermutation( primes[p], primes[p] + difference ))
+                {
+                    if(primes[i] != 1487)//we know only one other sequence exists, other than 1487, 4817, 8147
+                    {
+                       result = std::to_string(primes[i]) + std::to_string(primes[p]) + std::to_string(primes[p] + difference);
+                       i = primes.size();//will break upper loop
+                       break;//break lower loop
+                    }
+                }
+            }
+        }
+    }
+
+    // MessageWriter::Instance()->WriteToOutputBox("P049: "+result+ " in "+Clock::Instance()->StopAndReturnClock(clock_id) + " ms");
+    return result;
 }

@@ -1,4 +1,4 @@
-#include "eulerproblems.h"
+#include "eulerproblems.hpp"
 
 #include <fstream>
 #include <string>
@@ -6,16 +6,16 @@
 #include <queue>
 #include <iostream>
 #include <utility>
+#include <array>
 
-#include "message_writer.h"
-#include "clock.h"
-#include "graphs.h"
+#include "message_writer.hpp"
+#include "clock.hpp"
+#include "graphs_and_grids.hpp"
 #include "utils.hpp"
 
 
 std::string Problem061()//does not work yet, no idea what the problem is. Might change implementation to a recursive one, as this one is messy
 {
-    auto clock_id = Clock::Instance()->StartClock();
     unsigned int chain_sum = 0;
 
     //polygonal numbers are written as P(s,n) being 's' the number of sides (3 = triangle) and 'n' the term
@@ -77,7 +77,7 @@ std::string Problem061()//does not work yet, no idea what the problem is. Might 
 
     //try to change to a recursive implementation as the nested fors are messy
     //check for chain
-    //for(unsigned int i = 0; i < poligonal_numbers.size(); i++)//check for first
+    for(unsigned int i = 0; i < poligonal_numbers.size(); i++)//check for first
     {
         //{1º
 //        if(chain_found)
@@ -263,18 +263,16 @@ std::string Problem061()//does not work yet, no idea what the problem is. Might 
     for(unsigned int chain_element : chain)
     {
         chain_sum += chain_element;
-        //MessageWriter::Instance()->WriteToOutputBox("P: "+std::to_string(chain_element));
+        // MessageWriter::Instance()->WriteToOutputBox("P: "+std::to_string(chain_element));
     }
 
     //MessageWriter::Instance()->WriteToOutputBox("P061: "+std::to_string(chain_sum)+ " in "+Clock::Instance()->StopAndReturnClock(clock_id) + " ms");
-    return ("P061: "+std::to_string(chain_sum)+ " in "+Clock::Instance()->StopAndReturnClock(clock_id) + " ms");
+    return std::to_string(chain_sum);
 }
 
 
-void Problem067()//this is the same as problem 18 but with a bigger triangle
+std::string Problem067()//this is the same as problem 18 but with a bigger triangle
 {
-    //auto clock_id = Clock::Instance()->StartClock();
-
     std::ifstream numbers_file ("data/problems/p067");
     std::string line;
 
@@ -398,14 +396,12 @@ void Problem067()//this is the same as problem 18 but with a bigger triangle
             }
         }
 
-        ProblemsResults::Instance()->SetStoredResult("67", std::to_string(max_value));
-         //MessageWriter::Instance()->WriteToOutputBox("P067: "+std::to_string(max_value)+ " in "+Clock::Instance()->StopAndReturnClock(clock_id) + " ms");
-         //return ("P067: "+std::to_string(max_value)+ " in "+Clock::Instance()->StopAndReturnClock(clock_id) + " ms");
+        return std::to_string(max_value);
     }
     else
     {
         MessageWriter::Instance()->WriteLineToConsole("ERROR: failed to open input file at \"data/problems/p067\"");
         //MessageWriter::Instance()->WriteToOutputBox("ERROR: failed to open input file at \"data/problems/p067\"");
-        //return ("ERROR: failed to open input file at \"data/problems/p067\"");
+        return ("ERROR: failed to open input file at \"data/problems/p067\"");
     }
 }

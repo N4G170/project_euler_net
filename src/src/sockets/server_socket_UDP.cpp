@@ -1,14 +1,15 @@
 #include "server_socket_UDP.hpp"
 #include "utils.hpp"
-#include "eulerproblems.h"
+#include "problems_results.hpp"
 
-ServerSocketUDP::ServerSocketUDP(unsigned int port, unsigned int packet_size)
+ServerSocketUDP::ServerSocketUDP(unsigned int port, unsigned int packet_size, ProblemsResults* results): m_results{results}
 {
     m_port = port;                      // The m_port number on the server we're connecting to
 	m_packet_size = packet_size;        // The maximum size of a message
 
     m_udp_packet_in = SDLNet_AllocPacket(m_packet_size);
     m_udp_packet_out = SDLNet_AllocPacket(m_packet_size);
+    m_udp_list_packet_out = SDLNet_AllocPacket(ProblemsResults::problems_list.size());
 
     // Create the socket set with enough space to store our desired number of sockets, in this case, 1 as we will only check the server's udp socket
 	m_socket_set = SDLNet_AllocSocketSet(1);
@@ -80,6 +81,7 @@ ServerSocketUDP::~ServerSocketUDP()
 {
     SDLNet_FreePacket(m_udp_packet_in);
     SDLNet_FreePacket(m_udp_packet_out);
+    SDLNet_FreePacket(m_udp_list_packet_out);
 
     SDLNet_UDP_Close(m_server_socket);
     m_server_socket = nullptr;
@@ -117,13 +119,17 @@ void ServerSocketUDP::ProcessSocketActivity()
             //check the type of the message
             if(exploded_message[0].compare("REQUEST") == 0)
             {
-                ProblemsResults::Instance()->RequestProblem(exploded_message[1], m_udp_packet_in->address, this);
+                m_results->RequestProblem(exploded_message[1], m_udp_packet_in->address, this);
 
                 message = "INFO|Processing UDP request for problem "+exploded_message[1]+"|END";
                 //std::cout<<"RRRRRR - "<<m_udp_packet_in->address.host<<":"<<m_udp_packet_in->address.port<<" - "<<message<<std::endl;
                 SendMessage(m_udp_packet_in->address, message);
                 //SDLNet_UDP_Send(m_server_socket, -1, m_udp_packet_in);//works
             }
+        	else if(exploded_message[0].compare("LIST") == 0)
+        	{
+                SendList(m_udp_packet_in->address);
+        	}
         }
 	}
 }
@@ -147,6 +153,29 @@ void ServerSocketUDP::SendMessage(IPaddress client_ip, std::string message)
     m_udp_packet_out->len = m_packet_size;
 
 	SDLNet_UDP_Send(m_server_socket, -1, m_udp_packet_out);//the channel -1 means, no channel used and the unbound udp socket will be used
+
+    m_send_mutex.unlock();
+}
+
+void ServerSocketUDP::SendList(IPaddress client_ip)
+{
+    m_send_mutex.lock();
+
+    if(m_udp_list_packet_out == nullptr)
+    {
+        std::cout<<"Out packet not created"<<std::endl;
+        return;
+    }
+
+    //configure package
+    //memcpy(&m_udp_list_packet_out->address, &client_ip, sizeof(client_ip));
+    //m_udp_list_packet_out->address = m_udp_packet_in->address;
+    m_udp_list_packet_out->address = client_ip;
+    m_udp_list_packet_out->channel = -1;
+    m_udp_list_packet_out->data = (Uint8 *) ProblemsResults::problems_list.c_str();
+    m_udp_list_packet_out->len = ProblemsResults::problems_list.size();
+
+	SDLNet_UDP_Send(m_server_socket, -1, m_udp_list_packet_out);//the channel -1 means, no channel used and the unbound udp socket will be used
 
     m_send_mutex.unlock();
 }

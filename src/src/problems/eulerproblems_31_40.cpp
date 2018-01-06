@@ -1,4 +1,4 @@
-#include "eulerproblems.h"
+#include "eulerproblems.hpp"
 
 #include <fstream>
 #include <string>
@@ -10,21 +10,17 @@
 #include <algorithm>
 #include <array>
 
-#include "message_writer.h"
-#include "clock.h"
-#include "graphs.h"
+#include "message_writer.hpp"
+#include "clock.hpp"
+#include "graphs_and_grids.hpp"
 #include "utils.hpp"
 
-void Problem034()
+std::string Problem034()
 {
-    //auto clock_id = Clock::Instance()->StartClock();
-
     //pre-calculate factorials for each digit
     std::array<unsigned int, 10> factorials;
     for(unsigned int i = 0; i < factorials.size(); i++)
-    {
         factorials[i] = Factorial(i);
-    }
 
     unsigned int limit = 362880;// 9! will be the limit
     unsigned int total_digit_factorial_sum = 0;
@@ -46,22 +42,18 @@ void Problem034()
             total_digit_factorial_sum += i;
     }
 
-    ProblemsResults::Instance()->SetStoredResult("34", std::to_string(total_digit_factorial_sum));
-    //MessageWriter::Instance()->WriteToOutputBox("P036: "+std::to_string(double_palindrome_sum)+ " in "+Clock::Instance()->StopAndReturnClock(clock_id) + " ms");
-    //return ("P034: "+std::to_string(total_digit_factorial_sum)+ " in "+Clock::Instance()->StopAndReturnClock(clock_id) + " ms");
+    return (std::to_string(total_digit_factorial_sum));
 }
 
-void Problem035()
+std::string Problem035()
 {
-    //auto clock_id = Clock::Instance()->StartClock();
-
-    std::vector<unsigned long> primes = PrimeBoolVectorToIntVector(SieveOfEratosthenes(1000000));
+    std::vector<ulong_t> primes = PrimeBoolVectorToIntVector(SieveOfEratosthenes(1000000));
 
     std::string prime_str = "";
     std::string prime_str_permutation = "";
     unsigned int total_circular_primes = 0;
 
-    for(unsigned long prime : primes)
+    for(ulong_t prime : primes)
     {
         prime_str = std::to_string(prime);
         prime_str_permutation = prime_str;
@@ -85,18 +77,16 @@ void Problem035()
         if(circular_prime)
         {
             total_circular_primes++;
-            std::cout<<prime<<std::endl;
+            // std::cout<<prime<<std::endl;
         }
     }
 
-    ProblemsResults::Instance()->SetStoredResult("35", std::to_string(total_circular_primes));
-    //MessageWriter::Instance()->WriteToOutputBox("P036: "+std::to_string(double_palindrome_sum)+ " in "+Clock::Instance()->StopAndReturnClock(clock_id) + " ms");
-    //return ("P035: "+std::to_string(total_circular_primes)+ " in "+Clock::Instance()->StopAndReturnClock(clock_id) + " ms");
+    return (std::to_string(total_circular_primes));
 }
 
-void Problem036()
+std::string Problem036()
 {
-    //auto clock_id = Clock::Instance()->StartClock();
+    auto clock_id = Clock::Instance()->StartClock();
 
     unsigned int limit = 1000000;
     unsigned int double_palindrome_sum = 0;
@@ -105,13 +95,48 @@ void Problem036()
     {
         std::bitset<32> b2 (i);
 
-        if( IsPalindrome(i) && IsPalindrome(std::stoul( b2.to_string() )) )//the std::stoul will remove any leading zeros
+        if( IsPalindrome(i) && IsPalindrome(std::stoull( b2.to_string() )) )//the std::stoull will remove any leading zeros (windows needs stoull)
         {
             double_palindrome_sum += i;
         }
     }
 
-    ProblemsResults::Instance()->SetStoredResult("36", std::to_string(double_palindrome_sum));
-    //MessageWriter::Instance()->WriteToOutputBox("P036: "+std::to_string(double_palindrome_sum)+ " in "+Clock::Instance()->StopAndReturnClock(clock_id) + " ms");
-    //return ("P036: "+std::to_string(double_palindrome_sum)+ " in "+Clock::Instance()->StopAndReturnClock(clock_id) + " ms");
+    return (std::to_string(double_palindrome_sum));
+}
+
+std::string Problem038()
+{
+    // auto clock_id = Clock::Instance()->StartClock();
+    // int result{0};
+
+
+    return "";
+}
+
+std::string Problem040()
+{
+    // unsigned int digits{0};
+    // unsigned int number{1};
+    //
+    // while(true)
+    // {
+    //     digits += NumberOfDigits(number);
+    //
+    //     if(digits >= 1000000)
+    //         break;
+    //     number++;
+    // }
+
+    unsigned int limit = 185185;//this number was calculated using the commented code above
+    std::string number_str{"."};
+
+    for(unsigned int i = 1; i <= limit; i++)
+        number_str += std::to_string( i );
+
+    //d1 × d10 × d100 × d1000 × d10000 × d100000 × d1000000
+    int result = CharToUnsignedInt( number_str[1] ) * CharToUnsignedInt( number_str[10] ) * CharToUnsignedInt( number_str[100] ) * CharToUnsignedInt( number_str[1000] ) *
+                 CharToUnsignedInt( number_str[10000] ) * CharToUnsignedInt( number_str[100000] ) * CharToUnsignedInt( number_str[1000000] );
+
+
+    return (std::to_string(result));
 }

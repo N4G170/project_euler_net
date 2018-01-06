@@ -1,7 +1,6 @@
 #ifndef SOCKET_EXCEPTION_H
 #define SOCKET_EXCEPTION_H
 
-
 #include <string>
 
 // Custom simple exception class, we need this because to compile successfully

@@ -1,4 +1,4 @@
-#include "eulerproblems.h"
+#include "eulerproblems.hpp"
 #include <vector>
 #include <map>
 #include <list>
@@ -19,18 +19,15 @@
 #include <thread>
 #include <future>
 
-#include <SDL2/SDL_ttf.h>
 #include <thread>
 
-#include "graphs.h"
-#include "message_writer.h"
-#include "clock.h"
+#include "graphs_and_grids.hpp"
+#include "message_writer.hpp"
+#include "clock.hpp"
 
 
-void Problem021()
+std::string Problem021()
 {
-    //auto clock_id = Clock::Instance()->StartClock();
-
     //Let d(n) be defined as the sum of proper divisors of n (numbers less than n which divide evenly into n).
     std::map<unsigned int, unsigned int> divisor_sums;
 
@@ -51,15 +48,11 @@ void Problem021()
         }
     }
 
-    ProblemsResults::Instance()->SetStoredResult("21", std::to_string(total_amicable_numbers));
-    //MessageWriter::Instance()->WriteToOutputBox("P023: "+std::to_string(total_amicable_numbers)+ " in "+Clock::Instance()->StopAndReturnClock(clock_id) + " ms");
-    //return ("P021: "+std::to_string(total_amicable_numbers)+ " in "+Clock::Instance()->StopAndReturnClock(clock_id) + " ms");
+    return (std::to_string(total_amicable_numbers));
 }
 
-void Problem022()
+std::string Problem022()
 {
-    //auto clock_id = Clock::Instance()->StartClock();
-
     std::ifstream file ("data/problems/p022");
     std::string line;
 
@@ -78,7 +71,7 @@ void Problem022()
         file.close();
     }
 
-    unsigned long total = 0;
+    ulong_t total = 0;
 
     if(!words.empty())
     {
@@ -101,15 +94,11 @@ void Problem022()
         }
     }
 
-    ProblemsResults::Instance()->SetStoredResult("22", std::to_string(total));
-    //MessageWriter::Instance()->WriteToOutputBox("P022: "+std::to_string(total)+ " in "+Clock::Instance()->StopAndReturnClock(clock_id) + " ms");
-    //return ("P022: "+std::to_string(total)+ " in "+Clock::Instance()->StopAndReturnClock(clock_id) + " ms");
+    return (std::to_string(total));
 }
 
-void Problem023()
+std::string Problem023()
 {
-    //auto clock_id = Clock::Instance()->StartClock();
-
     //A perfect number is a number for which the sum of its proper divisors is exactly equal to the number.
     //A number n is called deficient if the sum of its proper divisors is less than n and it is called abundant if this sum exceeds n.
 
@@ -141,15 +130,11 @@ void Problem023()
             sum += i;//sum all numbers that are a sum of two abundant numbers
     }
 
-    ProblemsResults::Instance()->SetStoredResult("23", std::to_string(sum));
-    //MessageWriter::Instance()->WriteToOutputBox("P023: "+std::to_string(total_amicable_numbers)+ " in "+Clock::Instance()->StopAndReturnClock(clock_id) + " ms");
-    //return ("P023: "+std::to_string(sum)+ " in "+Clock::Instance()->StopAndReturnClock(clock_id) + " ms");
+    return (std::to_string(sum));
 }
 
-void Problem024()
+std::string Problem024()
 {
-    //auto clock_id = Clock::Instance()->StartClock();
-
 //    Find the largest index k such that a[k] < a[k + 1]. If no such index exists, the permutation is the last permutation.
 //    Find the largest index l greater than k such that a[k] < a[l].
 //    Swap the value of a[k] with that of a[l].
@@ -177,7 +162,7 @@ void Problem024()
 
         for(unsigned int i = 0; i < digits.size(); i++ )
         {
-            if( digits[i] > digits[k] && (int)i > k )
+            if( static_cast<int>(i) > k && digits[i] > digits[k] )
             {
                 if((int)i > l)
                     l = i;
@@ -205,19 +190,15 @@ void Problem024()
         std::next_permutation(str.begin(), str.end());
     }*/
 
-    ProblemsResults::Instance()->SetStoredResult("24", digits);
-    //MessageWriter::Instance()->WriteToOutputBox("P024: "+result+ " in "+Clock::Instance()->StopAndReturnClock(clock_id) + " ms");
-    //return ("P024: "+digits+ " in "+Clock::Instance()->StopAndReturnClock(clock_id) + " ms");
+    return (digits);
 }
 
-void Problem025()
+std::string Problem025()
 {
-    //auto clock_id = Clock::Instance()->StartClock();
-
     BigInt_t fn = 0;//the problem text already has F1 -> F12
     BigInt_t fn_1 = 1;//fibonacci Fn-1 -> F1 = 1
     BigInt_t fn_2 = 1;//fibonacci Fn-2 -> F2 = 1
-    unsigned long current_fibonacci_term = 2;
+    ulong_t current_fibonacci_term = 2;
 
     while(true)
     {
@@ -225,17 +206,14 @@ void Problem025()
         current_fibonacci_term++;
         fn = fn_1 + fn_2;
 
-        if(fn.str().size() == 1000)//found first of lenght 1000 digits
+        if(fn.get_str().size() == 1000)//found first of lenght 1000 digits
             break;
 
         fn_2 = fn_1;
         fn_1 = fn;
     }
 
-
-    ProblemsResults::Instance()->SetStoredResult("25", std::to_string(current_fibonacci_term));
-    //MessageWriter::Instance()->WriteToOutputBox("P025: "+std::to_string(current_fibonacci_term)+ " in "+Clock::Instance()->StopAndReturnClock(clock_id) + " ms");
-    //return ("P025: "+std::to_string(current_fibonacci_term)+ " in "+Clock::Instance()->StopAndReturnClock(clock_id) + " ms");
+    return (std::to_string(current_fibonacci_term));
 
     //Math note
     //A number 'm' uses at least 'k' digits in decimal representation if log_10(m) >= k-1
@@ -248,14 +226,14 @@ std::string Problem026()//this function is not working and I've yet to find the 
 
     //std::map<unsigned int, mpz_class> decimal_representation;
 
-    long double decimal_representation;//mpf -> floats, the mpz->int
+    // long double decimal_representation;//mpf -> floats, the mpz->int
 
     unsigned int longest_recurring_cycle_size = 0;
    // unsigned int longest_recurring_cycle_denominator = 1;
 
     for(float i = 11; i < 1000; i++)//will start on 11 as the problem already analysed
     {
-        decimal_representation = 1 / i;
+        long double decimal_representation = 1 / i;
 
         if(std::to_string(decimal_representation).size() > 2)//has decimal
         {
@@ -291,21 +269,17 @@ std::string Problem026()//this function is not working and I've yet to find the 
         }
 
     }
-
-    //ProblemsResults::Instance()->SetStoredResult("19", std::to_string(total_sundays_day1));
     //return ("P026: "+std::to_string(longest_recurring_cycle_denominator)+ " in "+Clock::Instance()->StopAndReturnClock(clock_id) + " ms");
     return ("P026: Not working, yet");
     //std::cout<<longest_recurring_cycle_denominator<<" in "<<Clock::Instance()->StopAndReturnClock(clock_id)<<" ms"<<std::endl;
 }
 
-void Problem027()
+std::string Problem027()
 {
-    //auto clock_id = Clock::Instance()->StartClock();
-
     unsigned int max_number_of_primes = 0;
-    long coeficients_product = 1;
+    long_t coeficients_product = 1;
 
-    std::vector<unsigned long> primes = PrimeBoolVectorToIntVector(SieveOfEratosthenes(1000));
+    std::vector<ulong_t> primes = PrimeBoolVectorToIntVector(SieveOfEratosthenes(1000));
 
     for(int a = -999; a < 1000; a++)
     {
@@ -316,7 +290,7 @@ void Problem027()
             //n^2 + an + b
             for(unsigned int n = 0; ; n++)
             {
-                long number = n*n + a*n + b;
+                long_t number = n*n + a*n + b;
 
                 if(number > 1)//positive and not 1
                 {
@@ -340,15 +314,11 @@ void Problem027()
         }
     }
 
-    ProblemsResults::Instance()->SetStoredResult("27", std::to_string(coeficients_product));
-    //MessageWriter::Instance()->WriteToOutputBox("P027: "+std::to_string(coeficients_product)+ " in "+Clock::Instance()->StopAndReturnClock(clock_id) + " ms");
-    //return ("P027: "+std::to_string(coeficients_product)+ " in "+Clock::Instance()->StopAndReturnClock(clock_id) + " ms");
+    return (std::to_string(coeficients_product));
 }
 
-void Problem029()
+std::string Problem029()
 {
-    //auto clock_id = Clock::Instance()->StartClock();
-
     std::set< BigInt_t > distinct_terms;
     BigInt_t term;
 
@@ -356,22 +326,18 @@ void Problem029()
     {
         for(int b = 2; b < 101; b++)
         {
-            term = boost::multiprecision::pow( BigInt_t(a), b );
+            mpz_ui_pow_ui(term.get_mpz_t(), a, b);
 
             //a set does not allow multiple entries with the same value, so we do not need to check if its exists
             distinct_terms.insert( term );
         }
     }
 
-    ProblemsResults::Instance()->SetStoredResult("29", std::to_string(distinct_terms.size()));
-    //MessageWriter::Instance()->WriteToOutputBox("P029: "+std::to_string(distinct_terms.size())+ " in "+Clock::Instance()->StopAndReturnClock(clock_id) + " ms");
-    //return ("P029: "+std::to_string(distinct_terms.size())+ " in "+Clock::Instance()->StopAndReturnClock(clock_id) + " ms");
+    return (std::to_string(distinct_terms.size()));
 }
 
-void Problem030()
+std::string Problem030()
 {
-    //auto clock_id = Clock::Instance()->StartClock();
-
     std::array< unsigned int, 10 > fifth_powers;
     unsigned int total_sum_of_digits_fifth_powers = 0;
 
@@ -396,7 +362,5 @@ void Problem030()
             total_sum_of_digits_fifth_powers += i;
     }
 
-    ProblemsResults::Instance()->SetStoredResult("30", std::to_string(total_sum_of_digits_fifth_powers));
-    //MessageWriter::Instance()->WriteToOutputBox("P030: "+std::to_string(total_sum_of_digits_fifth_powers)+ " in "+Clock::Instance()->StopAndReturnClock(clock_id) + " ms");
-    //return ("P030: "+std::to_string(total_sum_of_digits_fifth_powers)+ " in "+Clock::Instance()->StopAndReturnClock(clock_id) + " ms");
+    return (std::to_string(total_sum_of_digits_fifth_powers));
 }

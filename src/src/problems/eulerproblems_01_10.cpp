@@ -1,4 +1,4 @@
-#include "eulerproblems.h"
+#include "eulerproblems.hpp"
 #include <vector>
 #include <list>
 #include "utils.hpp"
@@ -8,17 +8,16 @@
 #include <string>
 #include <fstream>//files
 
-#include "message_writer.h"
-#include "clock.h"
+#include "message_writer.hpp"
+#include "clock.hpp"
 
 /**
  * \brief <a href="https://projecteuler.net/problem=1" target="blank" > Project Euler Problem 1 </a> - Multiples of 3 and 5
  * \details Find the sum of all the multiples of 3 or 5 below 1000.
+ * \return Problem result as a string
  */
-void Problem001()
+std::string Problem001()
 {
-    //auto clock_id = Clock::Instance()->StartClock();
-
     int limit = 1000;
     int sum = 0;
 
@@ -26,28 +25,25 @@ void Problem001()
         if(i%3 == 0 || i%5 == 0)
             sum += i;
 
-    ProblemsResults::Instance()->SetStoredResult("1", std::to_string(sum));
-    //MessageWriter::Instance()->WriteToOutputBox("P001: "+std::to_string(sum)+ " in "+Clock::Instance()->StopAndReturnClock(clock_id) + " ms");
-    //return ("P001: "+std::to_string(sum)+ " in "+Clock::Instance()->StopAndReturnClock(clock_id) + " ms");
+    return (std::to_string(sum));
 }
 
 /**
  * \brief <a href="https://projecteuler.net/problem=2" target="blank" > Project Euler Problem 2 </a> - Even Fibonacci numbers
  * \details By considering the terms in the Fibonacci sequence whose values do not exceed four million, find the sum of the even-valued terms.
+ * \return Problem result as a string
  */
-void Problem002()
+std::string Problem002()
 {
-    //auto clock_id = Clock::Instance()->StartClock();
-
     int limit = 4000000;
     int sum = 0;
     int previous_1 = 1;
     int previous_2 = 1;
-    int current = 0;
+    // int current = 0;
 
     while(previous_1 < limit)
     {
-        current = previous_1 + previous_2;
+        int current = previous_1 + previous_2;
 
         previous_2 = previous_1;
         previous_1 = current;
@@ -56,30 +52,27 @@ void Problem002()
             sum += current;
     }
 
-    ProblemsResults::Instance()->SetStoredResult("2", std::to_string(sum));
-    //MessageWriter::Instance()->WriteToOutputBox("P002: "+std::to_string(sum)+ " in "+Clock::Instance()->StopAndReturnClock(clock_id) + " ms");
-    //return ("P002: "+std::to_string(sum)+ " in "+Clock::Instance()->StopAndReturnClock(clock_id) + " ms");
+    return (std::to_string(sum));
 }
 
 /**
  * \brief <a href="https://projecteuler.net/problem=3" target="blank" > Project Euler Problem 3 </a> - Largest prime factor
  * \details What is the largest prime factor of the number 600851475143 ?
+ * \return Problem result as a string
  */
-void Problem003()
+std::string Problem003()
 {
-    //auto clock_id = Clock::Instance()->StartClock();
-
-    long number = 600851475143;
+    long_t number = 600851475143;
 
     //get a vector with all the numbers that are primes up to sqrt(600851475143)
     //the limit is sqrt(600851475143) because we are looking for 600851475143 factors and there are none bigger that sqrt(600851475143)
-    std::vector<unsigned long> primes = PrimeBoolVectorToIntVector(SieveOfEratosthenes(sqrt(number)));
-    unsigned long max_factor = 0;
+    std::vector<ulong_t> primes = PrimeBoolVectorToIntVector(SieveOfEratosthenes(sqrt(600851475143)));
+    ulong_t max_factor = 0;
 
     //find all factors
     while(number > 1)
     {
-        for(unsigned long prime : primes)
+        for(ulong_t prime : primes)
         {
             if(number % prime == 0)//factor found
             {
@@ -92,19 +85,17 @@ void Problem003()
         }
     }
 
-    ProblemsResults::Instance()->SetStoredResult("3", std::to_string(max_factor));
     //MessageWriter::Instance()->WriteToOutputBox("P003: "+std::to_string(max_factor)+ " in "+Clock::Instance()->StopAndReturnClock(clock_id) + " ms");
-    //return ("P003: "+std::to_string(max_factor)+ " in "+Clock::Instance()->StopAndReturnClock(clock_id) + " ms");
+    return (std::to_string(max_factor));
 }
 
 /**
  * \brief <a href="https://projecteuler.net/problem=4" target="blank" > Project Euler Problem 4 </a> - Largest palindrome product
  * \details A palindromic number reads the same both ways. Find the largest palindrome made from the product of two 3-digit numbers.
+ * \return Problem result as a string
  */
-void Problem004()
+std::string Problem004()
 {
-    //auto clock_id = Clock::Instance()->StartClock();
-
     int biggest_palindrome = 0;
     for(int i=999; i>99; i--)
     {
@@ -118,35 +109,30 @@ void Problem004()
         }
     }
 
-    ProblemsResults::Instance()->SetStoredResult("4", std::to_string(biggest_palindrome));
-    //MessageWriter::Instance()->WriteToOutputBox("P004: "+std::to_string(biggest_palindrome)+ " in "+Clock::Instance()->StopAndReturnClock(clock_id) + " ms");
-    //return ("P004: "+std::to_string(biggest_palindrome)+ " in "+Clock::Instance()->StopAndReturnClock(clock_id) + " ms");
+    return (std::to_string(biggest_palindrome));
 }
 
 /**
  * \brief <a href="https://projecteuler.net/problem=5" target="blank" > Project Euler Problem 5 </a> - Smallest multiple
  * \details What is the smallest positive number that is evenly divisible by all of the numbers from 1 to 20?
+ * \return Problem result as a string
  */
-void Problem005()
+std::string Problem005()
 {
-    //auto clock_id = Clock::Instance()->StartClock();
-
     std::vector<int> numbers{1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20};
 
     //the solution to this problem is the least common multiple (lcm) of al the number from 1 to 20
-    ProblemsResults::Instance()->SetStoredResult("5", std::to_string(LeastCommonMultiple(numbers)));
     //MessageWriter::Instance()->WriteToOutputBox("P005: "+std::to_string(LeastCommonMultiple(numbers)) + " in "+Clock::Instance()->StopAndReturnClock(clock_id) + " ms");
-    //return ("P005: "+std::to_string(LeastCommonMultiple(numbers)) + " in "+Clock::Instance()->StopAndReturnClock(clock_id) + " ms");
+    return (std::to_string(LeastCommonMultiple(numbers)));
 }
 
 /**
  * \brief <a href="https://projecteuler.net/problem=6" target="blank" > Project Euler Problem 6 </a> - Sum square difference
  * \details Find the difference between the sum of the squares of the first one hundred natural numbers and the square of the sum.
+ * \return Problem result as a string
  */
-void Problem006()
+std::string Problem006()
 {
-    //auto clock_id = Clock::Instance()->StartClock();
-
     int sum_of_squares = 0;
     int square_of_sum = 0;
 
@@ -158,36 +144,31 @@ void Problem006()
 
     square_of_sum *= square_of_sum;
 
-    ProblemsResults::Instance()->SetStoredResult("6", std::to_string(square_of_sum - sum_of_squares));
-    //MessageWriter::Instance()->WriteToOutputBox("P006: "+std::to_string(square_of_sum - sum_of_squares)+ " in "+Clock::Instance()->StopAndReturnClock(clock_id) + " ms");
-    //return ("P006: "+std::to_string(square_of_sum - sum_of_squares)+ " in "+Clock::Instance()->StopAndReturnClock(clock_id) + " ms");
+    return (std::to_string(square_of_sum - sum_of_squares));
 }
 
 /**
  * \brief <a href="https://projecteuler.net/problem=7" target="blank" > Project Euler Problem 7 </a> - 10001st prime
  * \details What is the 10 001st prime number?
+ * \return Problem result as a string
  */
-void Problem007()
+std::string Problem007()
 {
-    //auto clock_id = Clock::Instance()->StartClock();
-
     //the limit used in the SieveOfEratosthenes call was chosen based on trial and error, as no data for it was given
-    std::vector<unsigned long> primes = PrimeBoolVectorToIntVector(SieveOfEratosthenes(150000));//has 13848
+    std::vector<ulong_t> primes = PrimeBoolVectorToIntVector(SieveOfEratosthenes(150000));//has 13848
 
     //We use 10000 index as the vector starts at 0, so index 10000 = prime 10001
-    ProblemsResults::Instance()->SetStoredResult("7", std::to_string(primes[10000]));
     //MessageWriter::Instance()->WriteToOutputBox("P007: "+std::to_string(primes[10000])+ " in "+Clock::Instance()->StopAndReturnClock(clock_id) + " ms");
-    //return ("P007: "+std::to_string(primes[10000])+ " in "+Clock::Instance()->StopAndReturnClock(clock_id) + " ms");
+    return (std::to_string(primes[10000]));
 }
 
 /**
  * \brief <a href="https://projecteuler.net/problem=8" target="blank" > Project Euler Problem 8 </a> - Largest product in a series
  * \details Find the thirteen adjacent digits in the 1000-digit number that have the greatest product. What is the value of this product?
+ * \return Problem result as a string
  */
-void Problem008()
+std::string Problem008()
 {
-    //auto clock_id = Clock::Instance()->StartClock();
-
     int ascii_zero='0';//will be used for fast chat -> int casts
     std::string str_int =  "73167176531330624919225119674426574742355349194934"
                             "96983520312774506326239578318016984801869478851843"
@@ -210,11 +191,11 @@ void Problem008()
                             "05886116467109405077541002256983155200055935729725"
                             "71636269561882670428252483600823257530420752963450";
 
-    unsigned long greatest_product = 0;
+    ulong_t greatest_product = 0;
 
     for(unsigned int i=0; i<str_int.size()-13; i++)//-13 because we are looking for 13 long chains
     {
-        unsigned long tmp_product = 1;
+        ulong_t tmp_product = 1;
         for(int j=0; j<13; j++)//the chain is allways horizontal, as it is a single number and not multiple ones as str_int declaration might sugest
         {
             if(str_int[i+j] == ascii_zero)
@@ -227,16 +208,16 @@ void Problem008()
             greatest_product = tmp_product;
     }
 
-    ProblemsResults::Instance()->SetStoredResult("8", std::to_string(greatest_product));
     //MessageWriter::Instance()->WriteToOutputBox("P008: "+std::to_string(greatest_product)+ " in "+Clock::Instance()->StopAndReturnClock(clock_id) + " ms");
-    //return ("P008: "+std::to_string(greatest_product)+ " in "+Clock::Instance()->StopAndReturnClock(clock_id) + " ms");
+    return (std::to_string(greatest_product));
 }
 
 /**
  * \brief <a href="https://projecteuler.net/problem=9" target="blank" > Project Euler Problem 9 </a> - Special Pythagorean triplet
  * \details There exists exactly one Pythagorean triplet for which a + b + c = 1000. Find the product abc.
+ * \return Problem result as a string
  */
-void Problem009()
+std::string Problem009()
 {
     //a^2 + b^2 = c^2
     //Euclid's formula
@@ -247,15 +228,13 @@ void Problem009()
 
     //After some reading about a^2 + b^2 = c^2 (Pythagorean theorem), I found the Euclid's formula that allows the discovery of abc based on two numbers (m,n)
 
-    //auto clock_id = Clock::Instance()->StartClock();
-
-    int a = 0, b = 0, c = 0;
     int m, n;
     int product = 0;
 
     for(n = 1; product == 0; n++)
     {
-        a = b = c = 0;
+        int a = 0, b = 0, c = 0;
+        // a = b = c = 0;
 
         for(m = n + 1; a+b+c < 1000; m++)
         {
@@ -268,28 +247,23 @@ void Problem009()
         }
     }
 
-    ProblemsResults::Instance()->SetStoredResult("9", std::to_string(product));
-    //MessageWriter::Instance()->WriteToOutputBox("P009: "+std::to_string(product)+ " in "+Clock::Instance()->StopAndReturnClock(clock_id) + " ms");
-    //return ("P009: "+std::to_string(product)+ " in "+Clock::Instance()->StopAndReturnClock(clock_id) + " ms");
+    return (std::to_string(product));
 }
 
 /**
  * \brief <a href="https://projecteuler.net/problem=10" target="blank" > Project Euler Problem 10 </a> - Summation of primes
  * \details Find the sum of all the primes below two million.
+ * \return Problem result as a string
  */
-void Problem010()
+std::string Problem010()
 {
-    //auto clock_id = Clock::Instance()->StartClock();
-
-    long sum = 0;
+    long_t sum = 0;
 
     //will return all primes < 2 Million
-    std::vector<unsigned long> primes = PrimeBoolVectorToIntVector(SieveOfEratosthenes(2000000));
+    std::vector<ulong_t> primes = PrimeBoolVectorToIntVector(SieveOfEratosthenes(2000000));
 
     for(auto& prime : primes)
         sum += prime;
 
-    ProblemsResults::Instance()->SetStoredResult("10", std::to_string(sum));
-    //MessageWriter::Instance()->WriteToOutputBox("P010: "+std::to_string(sum)+ " in "+Clock::Instance()->StopAndReturnClock(clock_id) + " ms");
-    //return ("P010: "+std::to_string(sum)+ " in "+Clock::Instance()->StopAndReturnClock(clock_id) + " ms");
+    return (std::to_string(sum));
 }

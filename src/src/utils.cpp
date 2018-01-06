@@ -4,13 +4,60 @@
 #include <algorithm>
 #include <map>
 #include <utility>
+#include <array>
+
+/**
+ * @brief Count the number of digits in a number
+ * @param number - the number to be processed
+ * @return Number of digits in a number
+ */
+unsigned int NumberOfDigits(long number)
+{
+    //make number positive
+    if (number < 0)
+        number = std::labs(number);
+
+    //long max - 18446744073709551615 - 19 digits - 64bits
+
+    //not pretty but fast
+    if (number > 999999999999999999) return 19;
+    if (number > 99999999999999999) return 18;
+    if (number > 9999999999999999) return 17;
+    if (number > 999999999999999) return 16;
+    if (number > 99999999999999) return 15;
+    if (number > 9999999999999) return 14;
+    if (number > 999999999999) return 13;
+    if (number > 99999999999) return 12;
+    if (number > 9999999999) return 11;
+    if (number > 999999999) return 10;
+    if (number > 99999999) return 9;
+    if (number > 9999999) return 8;
+    if (number > 999999) return 7;
+    if (number > 99999) return 6;
+    if (number > 9999) return 5;
+    if (number > 999) return 4;
+    if (number > 99) return 3;
+    if (number > 9) return 2;
+
+    return 1;
+}
+
+/**
+ * @brief Convert a char to the number it represents
+ * @param character - the character to be converted
+ * @return The literal value of the char
+ */
+unsigned int CharToUnsignedInt(char character)
+{
+    return (unsigned int)(character - '0');
+}
 
 /**
  * @brief Sieve Of Eratosthenes - an implemention of the prime number sieve created by the greek mathematician Eratosthenes of Cyrene
  * @param limit - upper limit for the sieve pool
  * @return returns a vector containing the result of the sieve for every number from 0 to limit
  */
-std::vector<bool> SieveOfEratosthenes(const unsigned long& limit)
+std::vector<bool> SieveOfEratosthenes(const ulong_t& limit)
 {
     std::vector<bool> primes(limit + 1, true);//0 is included because we use the index to identify the number
 
@@ -28,17 +75,17 @@ std::vector<bool> SieveOfEratosthenes(const unsigned long& limit)
         }
     }
 
-    return std::move(primes);
+    return primes;
 }
 
 /**
  * @brief PrimeBoolVectorToIntVector
- * @param sieve_primes - the result from a call to the funcion @see SieveOfEratosthenes(unsigned long limit)
+ * @param sieve_primes - the result from a call to the funcion @see SieveOfEratosthenes(ulong_t limit)
  * @return returns a vector only with the numbers that are primes
  */
-std::vector<unsigned long> PrimeBoolVectorToIntVector(std::vector<bool> sieve_primes)
+std::vector<ulong_t> PrimeBoolVectorToIntVector(std::vector<bool> sieve_primes)
 {
-    std::vector<unsigned long> primes;
+    std::vector<ulong_t> primes;
 
     unsigned int i = 0;
 
@@ -49,7 +96,7 @@ std::vector<unsigned long> PrimeBoolVectorToIntVector(std::vector<bool> sieve_pr
         i++;
     }
 
-    return std::move(primes);
+    return primes;
 }
 
 /**
@@ -57,11 +104,11 @@ std::vector<unsigned long> PrimeBoolVectorToIntVector(std::vector<bool> sieve_pr
  * @param size - the number of primes to be found
  * @return returns vector with the prime numbers
  */
-std::vector<unsigned long> PrimeNumberPoolOfSize(unsigned int size)
+std::vector<ulong_t> PrimeNumberPoolOfSize(unsigned int size)
 {
-    std::vector<unsigned long> primes;
+    std::vector<ulong_t> primes;
 
-    unsigned long number = 1;
+    ulong_t number = 1;
 
     while(primes.size() < size)
     {
@@ -81,7 +128,7 @@ std::vector<unsigned long> PrimeNumberPoolOfSize(unsigned int size)
  * @param number - the number to be checked
  * @return true/false - is the given number a prime
  */
-bool IsPrime(unsigned long number)
+bool IsPrime(ulong_t number)
 {
     if(number <= 1)
         return false;
@@ -96,7 +143,7 @@ bool IsPrime(unsigned long number)
     else//All primes greater than 3 can be written in the form 6k+/-1.
     {
         double root = std::sqrt(number);
-        unsigned long test_number = 5;
+        ulong_t test_number = 5;
 
         while(test_number <= root)
         {
@@ -119,7 +166,7 @@ bool IsPrime(unsigned long number)
  * @param number - the number to be checked
  * @return true/false - if the number is or is not a palindrome
  */
-bool IsPalindrome(unsigned long long number, unsigned int base)
+bool IsPalindrome(ulong_t number, unsigned int base)
 {
     /*std::string number_str = std::to_string(number);
     std::string reversed_number_str = number_str;
@@ -127,13 +174,12 @@ bool IsPalindrome(unsigned long long number, unsigned int base)
 
     return number_str == reversed_number_str;*/
 
-    unsigned long long forward_number = number;
-    unsigned long long reversed_number = 0;
-    unsigned int digit;
+    ulong_t forward_number = number;
+    ulong_t reversed_number = 0;
 
      while (number > 0)
      {
-          digit = number % base;
+          unsigned int digit = number % base;
           reversed_number = reversed_number * base + digit;
           number = number / base;
      }
@@ -164,7 +210,7 @@ unsigned int GeneratePalindrome(unsigned int base_number, unsigned int base, boo
  */
 int LeastCommonMultiple(std::vector<int> numbers)
 {
-    std::map<int, std::map<unsigned long, unsigned long>> factors;//will save all factors
+    std::map<int, std::map<ulong_t, ulong_t>> factors;//will save all factors
 
     for(int number : numbers)
     {
@@ -205,7 +251,7 @@ int LeastCommonMultiple(std::vector<int> numbers)
 
 int LeastCommonMultiple(int a, int b)
 {
-    std::map<int, std::map<unsigned long, unsigned long>> factors;//will save all factors
+    std::map<int, std::map<ulong_t, ulong_t>> factors;//will save all factors
 
     factors[a] = PrimeFactorsOfNumber(a);
     factors[b] = PrimeFactorsOfNumber(b);
@@ -259,7 +305,7 @@ int GreatestCommonDivisor(int a, int b)
  * @param number - number to be factorized (must be positive)
  * @return returns a map with the pairs of the factors and their exponent
  */
-std::map<unsigned long,unsigned long> PrimeFactorsOfNumber(unsigned long number)
+std::map<ulong_t,ulong_t> PrimeFactorsOfNumber(ulong_t number)
 {
     return PrimeFactorsOfNumber(number, PrimeBoolVectorToIntVector(SieveOfEratosthenes(number)));//inefficient
 }
@@ -270,16 +316,16 @@ std::map<unsigned long,unsigned long> PrimeFactorsOfNumber(unsigned long number)
  * @param prime_numbers - pool of prime numbers to be used
  * @return returns a map with the pairs of the factors and their exponent
  */
-std::map<unsigned long,unsigned long> PrimeFactorsOfNumber(unsigned long number, const std::vector<unsigned long>& prime_numbers)
+std::map<ulong_t,ulong_t> PrimeFactorsOfNumber(ulong_t number, const std::vector<ulong_t>& prime_numbers)
 {
-    std::map<unsigned long,unsigned long> factors;
+    std::map<ulong_t,ulong_t> factors;
 
-    unsigned long number_fraction = number;
+    ulong_t number_fraction = number;
 
     while(number_fraction > 1)
     {
         //calculate the factors
-        for(unsigned long prime : prime_numbers)
+        for(ulong_t prime : prime_numbers)
         {
             if(number_fraction % prime == 0)//valid prime
             {
@@ -302,24 +348,24 @@ std::map<unsigned long,unsigned long> PrimeFactorsOfNumber(unsigned long number,
     return factors;
 }
 
-std::vector<unsigned long> ProperDivisors(const unsigned long& number)
+std::vector<ulong_t> ProperDivisors(const ulong_t& number)
 {
-    std::vector<unsigned long> divisors;
+    std::vector<ulong_t> divisors;
 
-    for(unsigned long i = 1; i <= number/2; i++ )
+    for(ulong_t i = 1; i <= number/2; i++ )
     {
         if(number % i == 0)
             divisors.push_back(i);
     }
 
-    return std::move(divisors);
+    return divisors;
 }
 
-unsigned long SumOfProperDivisors(const unsigned long& number)
+ulong_t SumOfProperDivisors(const ulong_t& number)
 {
-    unsigned long sum = 0;
+    ulong_t sum = 0;
 
-    for(unsigned long i = 1; i <= number/2; i++ )
+    for(ulong_t i = 1; i <= number/2; i++ )
     {
         if(number % i == 0)
             sum += i;
@@ -334,7 +380,7 @@ bool AreChainNumbers(unsigned int left, unsigned int right, unsigned int divisor
 }
 
 //{ Factorial
-unsigned long Factorial(unsigned long number)
+ulong_t Factorial(ulong_t number)
 {
     if(number == 0)
         return 1;
@@ -342,11 +388,11 @@ unsigned long Factorial(unsigned long number)
     return number * Factorial(number-1);
 }
 
-BigInt_t BigFactorial(unsigned long number)
+BigInt_t BigFactorial(ulong_t number)
 {
     BigInt_t big_number = 1;
 
-    for(unsigned long i = number; i > 0; i--)
+    for(ulong_t i = number; i > 0; i--)
     {
         big_number *= i;
     }
@@ -354,11 +400,11 @@ BigInt_t BigFactorial(unsigned long number)
     return big_number;
 }
 
-unsigned long PartialFactorial(unsigned long start_number, unsigned long end_number)
+ulong_t PartialFactorial(ulong_t start_number, ulong_t end_number)
 {
-    unsigned long number = 1;
+    ulong_t number = 1;
 
-    for(unsigned long i = end_number; i >= start_number ; i--)
+    for(ulong_t i = end_number; i >= start_number ; i--)
     {
         number *= i;
     }
@@ -366,11 +412,11 @@ unsigned long PartialFactorial(unsigned long start_number, unsigned long end_num
     return number;
 }
 
-BigInt_t BigPartialFactorial(unsigned long start_number, unsigned long end_number)
+BigInt_t BigPartialFactorial(ulong_t start_number, ulong_t end_number)
 {
     BigInt_t big_number = 1;
 
-    for(unsigned long i = end_number; i >= start_number ; i--)
+    for(ulong_t i = end_number; i >= start_number ; i--)
     {
         big_number *= i;
     }
@@ -440,26 +486,26 @@ std::vector< std::string > Explode(const std::string& str, const std::string& se
 {
         std::vector< std::string > result_sting;
     	std::string::size_type position;
-        std::string str_auxilua = str;
+        std::string str_auxilia = str;
 
-    	str_auxilua = Trim(str_auxilua);
+    	str_auxilia = Trim(str_auxilia);
 
-        while( (position = str_auxilua.find(separator)) != std::string::npos)//found next cut area
+        while( (position = str_auxilia.find(separator)) != std::string::npos)//found next cut area
         {
-            result_sting.push_back( std::move( str_auxilua.substr(0, position)) );
+            result_sting.push_back( str_auxilia.substr(0, position) );
 
-            str_auxilua = str_auxilua.substr( position + 1);
+            str_auxilia = str_auxilia.substr( position + 1);
         }
 
         //stores the last section as it will not run the loop
-        result_sting.push_back( str_auxilua );
+        result_sting.push_back( str_auxilia );
 
-        return std::move( result_sting );
+        return result_sting;
 }
 
-unsigned long WordAlphabeticalValue(const std::string& word, std::map<char, int>& values)
+ulong_t WordAlphabeticalValue(const std::string& word, std::map<char, int>& values)
 {
-    unsigned long total = 0;
+    ulong_t total = 0;
 
     for(auto letter : word)
     {
@@ -469,3 +515,103 @@ unsigned long WordAlphabeticalValue(const std::string& word, std::map<char, int>
     return std::move(total);
 }
 //}
+
+double Phi(const unsigned int& number, const std::map<ulong_t,ulong_t>& factors)
+{
+    double phi = number;
+    //phi also known as Euler's totient function can be calculated using the expression
+    //
+    //phi(n) = n * (1 - 1/p1) * ... * (1 - 1/pn), where p1...pn are the prime factors or n
+
+    for(auto factor : factors)
+    {
+        phi *= (1.0 - 1.0/(double)factor.first);
+    }
+
+    return phi;
+}
+
+long long Phi(const unsigned int& number, const std::vector<ulong_t>& primes)
+{
+    long long phi = number;
+    int remainder = number;
+    int prime = 0;
+    double root = std::sqrt(number);
+
+    for(unsigned int i = 0; i < primes.size() && prime <= root; i++)
+    {
+        prime = primes[i];
+
+        if(remainder == 1)//there is nothing else to do here
+            break;
+
+        if(number % prime == 0)
+        {
+            //phi *= (1 - 1 / prime);//this "rule" needs the vars to be doubles or we have precision errors
+            //so we can use the other version -> (1-1/prime) = prime/prime - 1/prime = (prime-1)/prime  (it is the same thing)
+            phi *= (prime - 1);
+            phi /= prime;
+
+            //the while loop removes all the extra occurrence of the current prime
+            //phi only need one instance of each prime factors ex: 4 = 2^2, phi only needs one 2 so we remove the other
+            while(remainder % prime == 0)
+                remainder /= prime;
+        }
+    }
+    //if a number is a prime as it is bigger than 'root' we have to apply it to phi
+    if(remainder > 1)
+    {
+        phi = phi * (remainder - 1);
+        phi /= remainder;
+    }
+
+    return phi;
+}
+
+std::vector<unsigned short> GetDigits(long number)
+{
+    std::vector<unsigned short> digits;
+
+    while(number!= 0)
+    {
+        digits.push_back( number%10 );
+        number /= 10;
+    }
+
+    return digits;
+}
+
+ulong_t ConcatenateDigits(const std::vector<unsigned short>& digits)
+{
+    ulong_t number{0};
+
+    for( int i =  digits.size() - 1; i >= 0; i--)
+    {
+        number += digits[i] * std::pow(10,i);
+    }
+
+    return number;
+}
+
+bool IsPermutation(long number_1, long number_2)
+{
+    std::array<short, 10> digits_count{{ 0,0,0,0,0,0,0,0,0,0 }};//only in C++11 we need to use {{}}. since c++14, {} are ok, but since my lint keeps marking it with a warnning, I used {{}}
+
+    while(number_1 != 0)
+    {
+        digits_count[ number_1 % 10 ]++;
+        number_1 /= 10;
+    }
+
+    while(number_2 != 0)
+    {
+        digits_count[ number_2 % 10 ]--;
+        number_2 /= 10;
+    }
+
+    for( short digit_count : digits_count)
+        if(digit_count > 0)
+            return false;
+
+    return true;
+}

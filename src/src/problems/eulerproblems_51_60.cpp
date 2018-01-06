@@ -1,9 +1,9 @@
-#include "eulerproblems.h"
+#include "eulerproblems.hpp"
 #include "utils.hpp"
-#include "message_writer.h"
+#include "message_writer.hpp"
 
-#include "clock.h"
-#include "poker_hand.h"
+#include "clock.hpp"
+#include "poker_hand.hpp"
 
 #include <vector>
 #include <string>
@@ -13,8 +13,8 @@
 std::string Problem051()//does not work yet
 {
     int sequence_size = 0;
-    unsigned long current_number = 56003;//this value comes from the problem description
-    unsigned long min_number = ULONG_MAX;
+    ulong_t current_number = 56003;//this value comes from the problem description
+    ulong_t min_number = ULONG_MAX;
 
 
     while(sequence_size < 8)
@@ -39,7 +39,7 @@ std::string Problem051()//does not work yet
             for(;j < 10; j++)
             {
                 number_string[i]=j;
-                unsigned long number = std::stoul(number_string);
+                ulong_t number = std::stoul(number_string);
 
                 if(IsPrime(number))
                 {
@@ -56,11 +56,50 @@ std::string Problem051()//does not work yet
     return ("Sequence: "+std::to_string(sequence_size)+" - Number:"+std::to_string(min_number));
 }
 
+std::string Problem052()
+{
+    long_t result{0};
+
+    // 2x, 3x, 4x, 5x, and 6x
+    for(long_t i{10}; ; ++i)
+    {
+        long_t base_number_of_digits{ (long_t)NumberOfDigits(i) };
+        long_t multiple_2{ i * 2 };
+        if(NumberOfDigits(multiple_2) == base_number_of_digits)
+        {
+            long_t multiple_3{ i * 3 };
+            if(NumberOfDigits(multiple_3) == base_number_of_digits)
+            {
+                long_t multiple_4{ i * 4 };
+                if(NumberOfDigits(multiple_4) == base_number_of_digits)
+                {
+                    long_t multiple_5{ i * 5 };
+                    if(NumberOfDigits(multiple_5) == base_number_of_digits)
+                    {
+                        long_t multiple_6{ i * 6 };
+                        if(NumberOfDigits(multiple_6) == base_number_of_digits)
+                        {
+                            if( IsPermutation(multiple_2, multiple_3) && IsPermutation(multiple_2, multiple_4) &&
+                                IsPermutation(multiple_2, multiple_5) && IsPermutation(multiple_2, multiple_6) )
+                            {
+                                result = i;
+                                break;
+                            }
+                        }//6
+                    }//5
+                }//4
+            }//3
+        }//2
+    }
+
+    return std::to_string(result);
+}
+
 std::string Problem054()//does not work yet
 {
-    auto clock_id = Clock::Instance()->StartClock();
+    /*auto clock_id = Clock::Instance()->StartClock();
 
-    BigInt_t result;
+    mpz_class result;
 
     std::ifstream poker_file ("data/problems/p054");
     std::string line;
@@ -94,22 +133,24 @@ std::string Problem054()//does not work yet
                 std::cout<<a.first << "" << a.second;
             std::cout<<" ------- ";
 
-            /*std::cout<<"P2: ";
-            for(auto a : player_2.GetHand())
-                std::cout<<a.first << "" << a.second;
-            std::cout<<std::endl;*/
-        }
-
-        poker_file.close();
-
-       //MessageWriter::Instance()->WriteToOutputBox("P054:  in "+Clock::Instance()->StopAndReturnClock(clock_id) + " ms");
-       return ("P054:  in "+Clock::Instance()->StopAndReturnClock(clock_id) + " ms");
-
-    }
-    else
-    {
-        MessageWriter::Instance()->WriteLineToConsole("ERROR: failed to open input file at \"data/problems/p054\"");
-        //MessageWriter::Instance()->WriteToOutputBox("ERROR: failed to open input file at \"data/problems/p054\"");
-        return ("ERROR: failed to open input file at \"data/problems/p054\"");
-    }
+//            std::cout<<"P2: ";
+//            for(auto a : player_2.GetHand())
+//                std::cout<<a.first << "" << a.second;
+//            std::cout<<std::endl;
+            */
+//        }
+//
+//        poker_file.close();
+//
+//       //MessageWriter::Instance()->WriteToOutputBox("P054:  in "+Clock::Instance()->StopAndReturnClock(clock_id) + " ms");
+//       return ("P054:  in "+Clock::Instance()->StopAndReturnClock(clock_id) + " ms");
+//
+//    }
+//    else
+//    {
+//        MessageWriter::Instance()->WriteLineToConsole("ERROR: failed to open input file at \"data/problems/p054\"");
+//        //MessageWriter::Instance()->WriteToOutputBox("ERROR: failed to open input file at \"data/problems/p054\"");
+//        return ("ERROR: failed to open input file at \"data/problems/p054\"");
+//    }
+    return "";
 }

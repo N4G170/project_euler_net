@@ -1,15 +1,18 @@
 #ifndef SERVER_SOCKET_TCP_H
 #define SERVER_SOCKET_TCP_H
-#include "define_flags.h"
+#include "defines.hpp"
 
 #include <iostream>
 #include <string>
 #include <sstream>
-#include <SDL2/SDL_net.h>
+#include "SDL_net.h"
 #include <vector>
 #include <map>
 
 #include "SocketException.h" //custom exception header which defines an inline class
+// #include "problems_results.hpp"
+
+class ProblemsResults;
 
 class ServerSocketTCP
 {
@@ -67,12 +70,14 @@ class ServerSocketTCP
         */
 		unsigned int m_client_count;
 
+		ProblemsResults* m_results;
+
 	public:
 	    //static string with messages
 		static const std::string SERVER_NOT_FULL;
 		static const std::string SERVER_FULL;
 
-		ServerSocketTCP(unsigned int port, unsigned int buffer_size, unsigned int max_sockets);
+		ServerSocketTCP(unsigned int port, unsigned int buffer_size, unsigned int max_sockets, ProblemsResults* results);
 
 		~ServerSocketTCP();
 
@@ -104,6 +109,7 @@ class ServerSocketTCP
 		void SendMessage(int target_index, std::string message);
 		void SendMessage(TCPsocket& target, std::string message);
 		void SendMessage(int target_index, char* message);
+		void SendList(int target_index);
 };
 
 

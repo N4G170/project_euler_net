@@ -1,4 +1,7 @@
-#include "eulerproblems.h"
+#include "problems_results.hpp"
+#include "eulerproblems.hpp"
+
+std::string ProblemsResults::problems_list = "LIST|1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16|17|18|19|20|21|22|23|24|25|27|29|30|34|35|36|40|42|48|49|52|67|71|72|73|80|81|83|92|94|END";
 
 ProblemsResults::ProblemsResults()
 {
@@ -11,22 +14,6 @@ ProblemsResults::~ProblemsResults()
     m_tcp_server = nullptr;
     m_udp_server = nullptr;
 }
-
-//init static var
-std::unique_ptr<ProblemsResults> ProblemsResults::s_instance;
-
-std::unique_ptr<ProblemsResults>& ProblemsResults::Instance()
-{
-    //possibly move initialization to a new function and CALL IT at the beginning of the program
-    //and remove this check, as it will run every time Instance() is called
-    if(!s_instance)//does not exists
-    {
-        s_instance.reset(new ProblemsResults);
-    }
-
-    return s_instance;
-}
-
 
 void ProblemsResults::RequestProblem(std::string problem_number, int client_index, ServerSocketTCP* server)
 {
@@ -69,6 +56,7 @@ void ProblemsResults::RequestProblem(std::string problem_number, IPaddress clien
 
     m_results_mutex.lock();
 
+    //check if we have solved the problem
     auto result = m_results.find(problem_number);
 
     std::string result_str = "";
@@ -78,7 +66,7 @@ void ProblemsResults::RequestProblem(std::string problem_number, IPaddress clien
         result_str = "RESULT|"+problem_number+"|"+result->second+"|END|";
         m_udp_server->SendMessage(client_ip, result_str);
     }
-    else
+    else//failed to find it, so we request it
     {
         auto solving = m_problems_being_solved.find(problem_number);//check if the problem is already being solved
 
@@ -119,55 +107,94 @@ void ProblemsResults::SetStoredResult(std::string problem_number, std::string re
     m_results_mutex.unlock();
 }
 
+void ProblemsResults::CheckFuture()
+{
+    //checks if a running problem finished processing and prints its result
+    for(auto& problem : m_problems_future)
+    {
+        //the auto var will be a std::pair, being the Key the first var and its value the second var
+        //the second itself is a std::pair, that holds a bool(first) that tells if the problem is running
+        //and the second holds the problem future
+        if(problem.second.first && problem.second.second.wait_for(std::chrono::milliseconds(0)) == std::future_status::ready)
+        // if(problem.second.first && problem.second.second.valid())
+        {
+            problem.second.first = false;
+            this->SetStoredResult(std::to_string(problem.first), problem.second.second.get());
+        }
+    }
+}
+
 void ProblemsResults::SolveProblem(std::string problem_number)
 {
-    unsigned int problem = std::stoul( problem_number );
+    unsigned int requested_problem = std::stoul( problem_number );
+
     //std::cout<<"START: "<<problem_number<<std::endl;
-    switch(problem)
+    switch(requested_problem)
     {
-        case 1: { std::thread t(Problem001); t.detach(); } break;
-        case 2: { std::thread t(Problem002); t.detach(); } break;
-        case 3: { std::thread t(Problem003); t.detach(); } break;
-        case 4: { std::thread t(Problem004); t.detach(); } break;
-        case 5: { std::thread t(Problem005); t.detach(); } break;
-        case 6: { std::thread t(Problem006); t.detach(); } break;
-        case 7: { std::thread t(Problem007); t.detach(); } break;
-        case 8: { std::thread t(Problem008); t.detach(); } break;
-        case 9: { std::thread t(Problem009); t.detach(); } break;
-        case 10: { std::thread t(Problem010); t.detach(); } break;
-        //case 2: std::thread t2(Problem002); m_running_thread[t2.get_id()] = t2; t2.detach(); break;
+        case 1: m_problems_future[requested_problem].first = true; m_problems_future[requested_problem].second = std::async(std::launch::async, &Problem001); break;
+        case 2: m_problems_future[requested_problem].first = true; m_problems_future[requested_problem].second = std::async(std::launch::async, &Problem002); break;
+        case 3: m_problems_future[requested_problem].first = true; m_problems_future[requested_problem].second = std::async(std::launch::async, &Problem003); break;
+        case 4: m_problems_future[requested_problem].first = true; m_problems_future[requested_problem].second = std::async(std::launch::async, &Problem004); break;
+        case 5: m_problems_future[requested_problem].first = true; m_problems_future[requested_problem].second = std::async(std::launch::async, &Problem005); break;
+        case 6: m_problems_future[requested_problem].first = true; m_problems_future[requested_problem].second = std::async(std::launch::async, &Problem006); break;
+        case 7: m_problems_future[requested_problem].first = true; m_problems_future[requested_problem].second = std::async(std::launch::async, &Problem007); break;
+        case 8: m_problems_future[requested_problem].first = true; m_problems_future[requested_problem].second = std::async(std::launch::async, &Problem008); break;
+        case 9: m_problems_future[requested_problem].first = true; m_problems_future[requested_problem].second = std::async(std::launch::async, &Problem009); break;
+        case 10: m_problems_future[requested_problem].first = true; m_problems_future[requested_problem].second = std::async(std::launch::async, &Problem010); break;
 
-        case 11: { std::thread t(Problem011); t.detach(); } break;
-        case 12: { std::thread t(Problem012); t.detach(); } break;
-        case 13: { std::thread t(Problem013); t.detach(); } break;
-        case 14: { std::thread t(Problem014); t.detach(); } break;
-        case 15: { std::thread t(Problem015); t.detach(); } break;
-        case 16: { std::thread t(Problem016); t.detach(); } break;
-        case 17: { std::thread t(Problem017); t.detach(); } break;
-        case 18: { std::thread t(Problem018); t.detach(); } break;
-        case 19: { std::thread t(Problem019); t.detach(); } break;
-        case 20: { std::thread t(Problem020); t.detach(); } break;
+        case 11: m_problems_future[requested_problem].first = true; m_problems_future[requested_problem].second = std::async(std::launch::async, &Problem011); break;
+        case 12: m_problems_future[requested_problem].first = true; m_problems_future[requested_problem].second = std::async(std::launch::async, &Problem012); break;
+        case 13: m_problems_future[requested_problem].first = true; m_problems_future[requested_problem].second = std::async(std::launch::async, &Problem013); break;
+        case 14: m_problems_future[requested_problem].first = true; m_problems_future[requested_problem].second = std::async(std::launch::async, &Problem014); break;
+        case 15: m_problems_future[requested_problem].first = true; m_problems_future[requested_problem].second = std::async(std::launch::async, &Problem015); break;
+        case 16: m_problems_future[requested_problem].first = true; m_problems_future[requested_problem].second = std::async(std::launch::async, &Problem016); break;
+        case 17: m_problems_future[requested_problem].first = true; m_problems_future[requested_problem].second = std::async(std::launch::async, &Problem017); break;
+        case 18: m_problems_future[requested_problem].first = true; m_problems_future[requested_problem].second = std::async(std::launch::async, &Problem018); break;
+        case 19: m_problems_future[requested_problem].first = true; m_problems_future[requested_problem].second = std::async(std::launch::async, &Problem019); break;
+        case 20: m_problems_future[requested_problem].first = true; m_problems_future[requested_problem].second = std::async(std::launch::async, &Problem020); break;
 
-        case 21: { std::thread t(Problem021); t.detach(); } break;
-        case 22: { std::thread t(Problem022); t.detach(); } break;
-        case 23: { std::thread t(Problem023); t.detach(); } break;
-        case 24: { std::thread t(Problem024); t.detach(); } break;
-        case 25: { std::thread t(Problem025); t.detach(); } break;
-        //case 26: { std::thread t(Problem006); t.detach(); } break;
-        case 27: { std::thread t(Problem027); t.detach(); } break;
-        //case 28: { std::thread t(Problem008); t.detach(); } break;
-        case 29: { std::thread t(Problem029); t.detach(); } break;
-        case 30: { std::thread t(Problem030); t.detach(); } break;
+        case 21: m_problems_future[requested_problem].first = true; m_problems_future[requested_problem].second = std::async(std::launch::async, &Problem021); break;
+        case 22: m_problems_future[requested_problem].first = true; m_problems_future[requested_problem].second = std::async(std::launch::async, &Problem022); break;
+        case 23: m_problems_future[requested_problem].first = true; m_problems_future[requested_problem].second = std::async(std::launch::async, &Problem023); break;
+        case 24: m_problems_future[requested_problem].first = true; m_problems_future[requested_problem].second = std::async(std::launch::async, &Problem024); break;
+        case 25: m_problems_future[requested_problem].first = true; m_problems_future[requested_problem].second = std::async(std::launch::async, &Problem025); break;
 
-        case 34: { std::thread t(Problem034); t.detach(); } break;
-        case 35: { std::thread t(Problem035); t.detach(); } break;
-        case 36: { std::thread t(Problem036); t.detach(); } break;
+        //case 26: m_problems_future[requested_problem].first = true; m_problems_future[requested_problem].second = std::async(std::launch::async, &Problem026); break;
+        case 27: m_problems_future[requested_problem].first = true; m_problems_future[requested_problem].second = std::async(std::launch::async, &Problem027); break;
+        //case 28: m_problems_future[requested_problem].first = true; m_problems_future[requested_problem].second = std::async(std::launch::async, &Problem028); break;
+        case 29: m_problems_future[requested_problem].first = true; m_problems_future[requested_problem].second = std::async(std::launch::async, &Problem029); break;
+        case 30: m_problems_future[requested_problem].first = true; m_problems_future[requested_problem].second = std::async(std::launch::async, &Problem030); break;
 
-        case 42: { std::thread t(Problem042); t.detach(); } break;
-        case 48: { std::thread t(Problem048); t.detach(); } break;
+        case 34: m_problems_future[requested_problem].first = true; m_problems_future[requested_problem].second = std::async(std::launch::async, &Problem034); break;
+        case 35: m_problems_future[requested_problem].first = true; m_problems_future[requested_problem].second = std::async(std::launch::async, &Problem035); break;
+        case 36: m_problems_future[requested_problem].first = true; m_problems_future[requested_problem].second = std::async(std::launch::async, &Problem036); break;
+        case 40: m_problems_future[requested_problem].first = true; m_problems_future[requested_problem].second = std::async(std::launch::async, &Problem040); break;
 
-        case 67: { std::thread t(Problem067); t.detach(); } break;
+        case 42: m_problems_future[requested_problem].first = true; m_problems_future[requested_problem].second = std::async(std::launch::async, &Problem042); break;
 
-        case 81: { std::thread t(Problem081); t.detach(); } break;
+        //case 47: if(!m_problems_future[requested_problem].first){ m_problems_future[requested_problem].first = true; m_problems_future[requested_problem].second = std::async(std::launch::async, &Problem047); } break;
+        case 48: m_problems_future[requested_problem].first = true; m_problems_future[requested_problem].second = std::async(std::launch::async, &Problem048); break;
+        case 49: m_problems_future[requested_problem].first = true; m_problems_future[requested_problem].second = std::async(std::launch::async, &Problem049); break;
+
+        case 52: m_problems_future[requested_problem].first = true; m_problems_future[requested_problem].second = std::async(std::launch::async, &Problem052); break;
+        // case 54: m_problems_future[requested_problem].first = true; m_problems_future[requested_problem].second = std::async(std::launch::async, &Problem054); break;
+
+        //case 61: if(!m_problems_future[requested_problem].first){ m_problems_future[requested_problem].first = true; m_problems_future[requested_problem].second = std::async(std::launch::async, &Problem061); } break;
+        case 67: m_problems_future[requested_problem].first = true; m_problems_future[requested_problem].second = std::async(std::launch::async, &Problem067); break;
+
+        case 71: m_problems_future[requested_problem].first = true; m_problems_future[requested_problem].second = std::async(std::launch::async, &Problem071); break;
+        case 72: m_problems_future[requested_problem].first = true; m_problems_future[requested_problem].second = std::async(std::launch::async, &Problem072); break;
+        case 73: m_problems_future[requested_problem].first = true; m_problems_future[requested_problem].second = std::async(std::launch::async, &Problem073); break;
+        //case 74: m_problems_future[requested_problem].first = true; m_problems_future[requested_problem].second = std::async(std::launch::async, &Problem074); break;
+
+        case 80: m_problems_future[requested_problem].first = true; m_problems_future[requested_problem].second = std::async(std::launch::async, &Problem080); break;
+        case 81: m_problems_future[requested_problem].first = true; m_problems_future[requested_problem].second = std::async(std::launch::async, &Problem081); break;
+        //case 82: m_problems_future[requested_problem].first = true; m_problems_future[requested_problem].second = std::async(std::launch::async, &Problem082); break;
+        case 83: m_problems_future[requested_problem].first = true; m_problems_future[requested_problem].second = std::async(std::launch::async, &Problem083); break;
+
+        case 92: m_problems_future[requested_problem].first = true; m_problems_future[requested_problem].second = std::async(std::launch::async, &Problem092); break;
+        case 94: m_problems_future[requested_problem].first = true; m_problems_future[requested_problem].second = std::async(std::launch::async, &Problem094); break;
+
+        // default:  break;
     }
 }
